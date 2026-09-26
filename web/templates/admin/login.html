@@ -1,0 +1,43 @@
+{{define "login"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main class="narrow">
+        <br>
+        {{- if $d.MFAPending}}
+            <h1>{{t "admin.login.mfa_heading"}}</h1>
+            <p>{{t "admin.login.mfa_prompt"}}</p>
+            {{- if $d.Error}}
+                <p class="notice delete">{{$d.Error}}</p>
+            {{- end}}
+            <form method="post" action="{{.BasePath}}/admin">
+                <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                <label for="mfa_code">{{t "admin.login.mfa_code_label"}}</label>
+                <input type="text" id="mfa_code" name="mfa_code" autofocus inputmode="numeric" autocomplete="one-time-code" placeholder="123456" required{{if $d.LockedOut}} disabled{{end}}>
+                <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 1.25rem;">
+                    <button type="submit"{{if $d.LockedOut}} disabled{{end}}><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"></use></svg> {{t "admin.login.mfa_submit"}}</button>
+                    <a href="{{.BasePath}}/admin?cancel_mfa=1" class="button link-button"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"></use></svg> {{t "admin.login.mfa_cancel"}}</a>
+                </div>
+            </form>
+        {{- else}}
+            <h1>{{t "admin.login.heading"}}</h1>
+            {{- if $d.SetupDone}}
+                <p>{{t "admin.login.setup_complete"}}</p>
+            {{- end}}
+            {{- if $d.Error}}
+                <p class="notice delete">{{$d.Error}}</p>
+            {{- end}}
+            <form method="post" action="{{.BasePath}}/admin">
+                <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                <label for="username">{{t "admin.login.username"}}</label>
+                <input type="text" id="username" name="username" autofocus value="{{$d.Username}}" required{{if $d.LockedOut}} disabled{{end}}>
+
+                <label for="password">{{t "admin.login.password"}}</label>
+                <input type="password" id="password" name="password" required{{if $d.LockedOut}} disabled{{end}}>
+
+                <label class="checkbox-label">
+                    <input type="checkbox" name="remember_me" value="1"{{if $d.LockedOut}} disabled{{end}}>
+                    {{t "admin.login.remember_me"}}
+                </label>
+                <button type="submit"{{if $d.LockedOut}} disabled{{end}}><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"></use></svg> {{t "admin.login.submit"}}</button>
+            </form>
+        {{- end}}
+    </main>
+{{template "admin-bottom" .}}{{end}}

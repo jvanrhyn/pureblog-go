@@ -1,0 +1,41 @@
+{{define "settings-css"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main class="mid">
+        <h1>{{t "admin.settings.css.heading"}}</h1>
+        {{template "settings-save" .}}
+
+        <form method="post" id="settings-form" action="{{.BasePath}}/admin/settings-css"
+              hx-post="{{.BasePath}}/admin/settings-css" hx-target="#css-notices" hx-select="#css-notices" hx-swap="outerHTML">
+            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+            <div id="css-notices">{{template "notices" .}}</div>
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.css.section_front"}}</span>
+                <textarea id="front_css" name="front_css" rows="16" spellcheck="false" placeholder="{{t "admin.settings.css.placeholder_front"}}">{{$d.FrontCSS}}</textarea>
+            </section>
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.css.section_admin"}}</span>
+                <textarea id="admin_css" name="admin_css" rows="16" spellcheck="false" placeholder="{{t "admin.settings.css.placeholder_admin"}}">{{$d.AdminCSS}}</textarea>
+            </section>
+        </form>
+    </main>
+    <script type="module">
+        function initCssEditor(textarea) {
+            if (!textarea || typeof window.CodeJar === 'undefined') return;
+            const container = document.createElement('div');
+            container.className = 'editor language-css';
+            container.contentEditable = 'true';
+            container.spellcheck = false;
+            container.textContent = textarea.value;
+            textarea.style.display = 'none';
+            textarea.parentNode.insertBefore(container, textarea.nextSibling);
+            const jar = window.CodeJar(container, (editor) => {
+                Prism.highlightElement(editor);
+                if (editor.textContent.endsWith('\n')) {
+                    editor.appendChild(document.createElement('br'));
+                }
+            }, { spellcheck: false, addClosing: false, preserveIdent: false });
+            jar.onUpdate((code) => { textarea.value = code; });
+        }
+        initCssEditor(document.getElementById('front_css'));
+        initCssEditor(document.getElementById('admin_css'));
+    </script>
+{{template "admin-bottom" .}}{{end}}

@@ -1,0 +1,25 @@
+{{define "delete-content"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main>
+        <h1>{{t (printf "admin.delete_%s.heading" $d.Type)}}</h1>
+        {{- if .Errors}}
+            <div class="notice delete">
+                <ul>
+                    {{- range .Errors}}
+                    <li>{{.}}</li>
+                    {{- end}}
+                </ul>
+            </div>
+        {{- end}}
+        {{- if not $d.Found}}
+            <p>{{t (printf "admin.delete_%s.already_deleted" $d.Type)}}</p>
+        {{- else}}
+            <p>{{t (printf "admin.delete_%s.confirm" $d.Type) "title" $d.Title}}</p>
+            <form method="post" action="{{.BasePath}}/admin/delete-content">
+                <input type="hidden" name="type" value="{{$d.Type}}">
+                <input type="hidden" name="slug" value="{{$d.Slug}}">
+                <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                <button type="submit" class="delete">{{t (printf "admin.delete_%s.submit" $d.Type)}}</button>
+            </form>
+        {{- end}}
+    </main>
+{{template "admin-bottom" .}}{{end}}

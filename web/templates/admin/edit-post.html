@@ -1,0 +1,207 @@
+{{define "edit-post"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main>
+        <div class="editor-grid">
+            <section class="editor-main">
+                <h1>{{t "admin.post_editor.page_title"}}</h1>
+                {{template "editor-notices" .}}
+
+                <form method="post" class="editor-form" id="editor-form">
+                    <input type="hidden" name="original_slug" value="{{$d.OriginalSlug}}">
+                    <input type="hidden" name="original_status" value="{{$d.Status}}">
+                    <input type="hidden" name="original_date" value="{{$d.Date}}">
+                    <input type="hidden" name="post_layout" value="{{$d.Layout}}">
+                    <input type="hidden" id="feature-image-value" name="feature_image" value="{{$d.FeatureImage}}">
+                    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+
+                    <nav class="editor-actions">
+                        <button class="save" type="submit" form="editor-form" aria-label="{{t "admin.post_editor.save"}}">
+                            <svg class="icon" aria-hidden="true"><use href="#icon-save"></use></svg>
+                            {{t "admin.post_editor.save"}}
+                        </button>
+                        <button type="button" id="preview-button" aria-label="{{t "admin.post_editor.preview"}}">
+                            <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
+                            {{t "admin.post_editor.preview"}}
+                        </button>
+                        {{- if and $d.IsEditing $d.Slug}}
+                            <button type="submit" form="delete-post-form" class="link-button delete" aria-label="{{t "admin.post_editor.delete"}}" onclick="return confirm({{t "admin.post_editor.delete_confirm"}});">
+                                <svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg>
+                                {{t "admin.post_editor.delete"}}
+                            </button>
+                        {{- end}}
+                        <span id="autosave-status" class="autosave-status" aria-live="polite"
+                              hx-post="{{.BasePath}}/admin/autosave" hx-trigger="pb:autosave" hx-include="#editor-form"
+                              hx-vals='{"editor_type": "post", "action": "save"}' hx-swap="innerHTML"></span>
+                    </nav>
+
+                    {{- if not $d.CustomTitle}}
+                        <label for="title">{{t "admin.editor.title_label"}}</label>
+                        <input type="text" id="title" name="title" value="{{$d.Title}}" autocomplete="off">
+                    {{- end}}
+
+                    {{- if not $d.CustomContent}}
+                        <label for="content">{{t "admin.editor.content_label"}} <span class="tip">(<a target="_blank" rel="noopener noreferrer" href="https://pureblog.org/markdown-helper">{{t "admin.editor.tip_markdown"}}</a>)</span></label>
+                        <textarea id="content" name="content" rows="18" autocomplete="off">{{$d.Content}}</textarea>
+                    {{- end}}
+
+                    {{- range $d.LayoutFields}}
+                        {{- if ne .Type "checkbox"}}
+                        <label for="{{.ID}}">
+                            {{.Label}}
+                            {{- if eq .Name "content"}}
+                                <span class="tip">(<a target="_blank" rel="noopener noreferrer" href="https://pureblog.org/markdown-helper">{{t "admin.editor.tip_markdown"}}</a>)</span>
+                            {{- end}}
+                        </label>
+                        {{- end}}
+                        {{- if eq .Type "markdown"}}
+                            {{- if eq .Name "content"}}
+                                <textarea id="content" name="content" rows="18" autocomplete="off">{{.Value}}</textarea>
+                            {{- else}}
+                                <textarea id="{{.ID}}" name="{{.InputName}}" rows="8" data-layout-markdown autocomplete="off">{{.Value}}</textarea>
+                            {{- end}}
+                        {{- else if eq .Type "select"}}{{$v := .Value}}
+                            <select id="{{.ID}}" name="{{.InputName}}">
+                                <option value=""></option>
+                                {{- range .Options}}
+                                <option value="{{.}}" {{if eq $v .}}selected{{end}}>{{.}}</option>
+                                {{- end}}
+                            </select>
+                        {{- else if eq .Type "checkbox"}}
+                            <input type="hidden" name="{{.InputName}}" value="">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="{{.ID}}" name="{{.InputName}}" value="1" {{if eq .Value "1"}}checked{{end}}>
+                                {{.Label}}
+                            </label>
+                        {{- else}}
+                            <input type="text" id="{{.ID}}" name="{{.InputName}}" value="{{.Value}}" autocomplete="off">
+                        {{- end}}
+                    {{- end}}
+                </form>
+                {{- if and $d.IsEditing $d.Slug}}
+                    <form method="post" action="{{.BasePath}}/admin/delete-content" id="delete-post-form">
+                        <input type="hidden" name="type" value="post">
+                        <input type="hidden" name="slug" value="{{$d.Slug}}">
+                        <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                    </form>
+                {{- end}}
+            </section>
+            <aside class="editor-sidebar">
+                <div class="sidebar-header">
+                    <button type="button" class="sidebar-toggle" id="sidebar-toggle-tab" aria-label="{{t "admin.post_editor.settings_title"}}" title="{{t "admin.post_editor.settings_title"}}">
+                        <svg class="icon close-icon" aria-hidden="true"><use href="#icon-panel-right-close"></use></svg>
+                        <svg class="icon open-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                    </button>
+                    <span class="sidebar-title">{{t "admin.post_editor.settings_title"}}</span>
+                </div>
+                <section class="sidebar-section">
+                    <div class="section-divider">
+                        <label for="slug">{{t "admin.editor.slug_label"}}</label>
+                        <input type="text" id="slug" name="slug" form="editor-form" value="{{$d.Slug}}" autocomplete="off">
+
+                        <label for="description">{{t "admin.editor.description_label"}}</label>
+                        <textarea id="description" name="description" form="editor-form" rows="3" autocomplete="off">{{$d.Description}}</textarea>
+
+                        <label for="date">{{t "admin.editor.date_label"}}</label>
+                        <input type="text" id="date" name="date" form="editor-form" value="{{$d.Date}}" autocomplete="off">
+
+                        <label for="status">{{t "admin.editor.status_label"}}</label>
+                        <select id="status" name="status" form="editor-form">
+                            <option value="draft" {{if eq $d.Status "draft"}}selected{{end}}>{{t "admin.editor.status_draft"}}</option>
+                            <option value="scheduled" {{if eq $d.Status "scheduled"}}selected{{end}}>{{t "admin.editor.status_scheduled"}}</option>
+                            <option value="published" {{if eq $d.Status "published"}}selected{{end}}>{{t "admin.editor.status_published"}}</option>
+                        </select>
+
+                        <label for="tags">{{t "admin.post_editor.tags_label"}}</label>
+                        <div class="tag-input-wrap">
+                            <input type="text" id="tags" name="tags" form="editor-form" value="{{$d.Tags}}" autocomplete="off">
+                            <ul id="tag-suggestions" class="tag-suggestions" hidden></ul>
+                        </div>
+                    </div>
+                </section>
+                {{template "editor-images" .}}
+            </aside>
+        </div>
+    </main>
+    {{template "editor-script" .}}
+    <script>
+    (function () {
+        const input = document.getElementById('tags');
+        const list  = document.getElementById('tag-suggestions');
+        if (!input || !list) return;
+
+        let allTags = [];
+        let activeIndex = -1;
+
+        fetch(window.PureBlogGoEditorConfig.basePath + '/content/tag-index.json?v=' + {{$d.TagIndexVer}})
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data) allTags = Object.values(data).map(v => v.name); })
+            .catch(() => {});
+
+        function currentToken() {
+            const val = input.value;
+            return val.slice(val.lastIndexOf(',') + 1).trimStart().toLowerCase();
+        }
+
+        function currentPrefix() {
+            const val = input.value;
+            const lastComma = val.lastIndexOf(',');
+            return lastComma === -1 ? '' : val.slice(0, lastComma + 1) + ' ';
+        }
+
+        function hide() {
+            list.hidden = true;
+            list.innerHTML = '';
+            activeIndex = -1;
+        }
+
+        function applySelection(tag) {
+            input.value = currentPrefix() + tag;
+            hide();
+        }
+
+        function setActive(index) {
+            const items = list.querySelectorAll('li');
+            items.forEach(li => li.classList.remove('active'));
+            activeIndex = Math.max(-1, Math.min(index, items.length - 1));
+            if (activeIndex >= 0) items[activeIndex].classList.add('active');
+        }
+
+        input.addEventListener('input', function () {
+            const token = currentToken();
+            const existing = input.value.split(',').map(s => s.trim());
+            list.innerHTML = '';
+            activeIndex = -1;
+            if (token.length === 0) { hide(); return; }
+            const matches = allTags
+                .filter(t => t.toLowerCase().startsWith(token) && !existing.includes(t))
+                .slice(0, 10);
+            if (matches.length === 0) { hide(); return; }
+            matches.forEach(tag => {
+                const li = document.createElement('li');
+                li.textContent = tag;
+                li.dataset.tag = tag;
+                li.addEventListener('mousedown', e => { e.preventDefault(); applySelection(tag); });
+                list.appendChild(li);
+            });
+            list.hidden = false;
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (list.hidden) return;
+            if (e.key === 'ArrowDown') { e.preventDefault(); setActive(activeIndex + 1); }
+            if (e.key === 'ArrowUp')   { e.preventDefault(); setActive(activeIndex - 1); }
+            if (e.key === 'Enter' || e.key === 'Tab') {
+                const items = list.querySelectorAll('li');
+                if (activeIndex >= 0 && items[activeIndex]) {
+                    e.preventDefault();
+                    applySelection(items[activeIndex].dataset.tag);
+                }
+            }
+            if (e.key === 'Escape') hide();
+        });
+
+        document.addEventListener('click', e => {
+            if (!input.contains(e.target) && !list.contains(e.target)) hide();
+        });
+    })();
+    </script>
+{{template "admin-bottom" .}}{{end}}

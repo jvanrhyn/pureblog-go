@@ -1,0 +1,208 @@
+{{define "page-badge"}}
+<div class="page-badge-wrapper">
+    <button type="button" class="page-badge {{.Kind}}" aria-expanded="false" aria-controls="badge-popover-{{.Kind}}-{{.Slug}}">
+        <svg class="icon" aria-hidden="true"><use href="#icon-{{.Icon}}"></use></svg> {{t .Label}}
+    </button>
+    <div id="badge-popover-{{.Kind}}-{{.Slug}}" class="page-badge-popover" hidden>
+        <div class="page-badge-popover-top">
+            <span class="page-badge-popover-label">{{t "admin.content.badge_special_page_label"}}</span>
+            <button type="button" class="page-badge-popover-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="page-badge-popover-title">{{t .Label}}</div>
+        <p class="page-badge-popover-text">
+            {{tHTML .Popover "docs_link" .DocsLink}}
+        </p>
+    </div>
+</div>
+{{end}}
+
+{{define "content"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main class="mid">
+        <h1>{{if eq $d.Tab "pages"}}{{t "admin.content.tab_pages"}}{{else}}{{t "admin.content.tab_posts"}}{{end}}</h1>
+        <nav class="admin-actions">
+            {{- if eq $d.Tab "pages"}}
+                <a class="button save" href="{{.BasePath}}/admin/edit-page?action=new"><svg class="icon" aria-hidden="true"><use href="#icon-file-plus-corner"></use></svg> {{t "admin.content.new_page"}}</a>
+            {{- else if $d.HasLayouts}}
+                <button type="button" class="button save js-open-layout-picker"><svg class="icon" aria-hidden="true"><use href="#icon-file-plus-corner"></use></svg> {{t "admin.content.new_post"}}</button>
+            {{- else}}
+                <a class="button save" href="{{.BasePath}}/admin/edit-post?action=new"><svg class="icon" aria-hidden="true"><use href="#icon-file-plus-corner"></use></svg> {{t "admin.content.new_post"}}</a>
+            {{- end}}
+        </nav>
+        {{- if $d.UploadError}}
+            <p class="notice delete" data-auto-dismiss>{{$d.UploadError}}</p>
+        {{- end}}
+        {{- if eq $d.Tab "posts"}}
+
+            {{- if $d.Saved}}
+                <p class="notice" data-auto-dismiss>{{t "admin.content.notice_post_saved"}}</p>
+            {{- end}}
+            {{- if $d.Deleted}}
+                <p class="notice" data-auto-dismiss>{{t "admin.content.notice_post_deleted"}}</p>
+            {{- end}}
+
+            <details class="content-filter"{{if $d.DetailsOpen}} open{{end}}>
+                <summary class="content-filter-summary">
+                    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+                    {{t "admin.content.filter_title"}}
+                    <span class="content-filter-active-label" id="filter-label"{{if not $d.FilterLabel}} hidden{{end}}>{{$d.FilterLabel}}</span>
+                </summary>
+                <form method="get" action="{{.BasePath}}/admin/content" class="content-filter-form"
+                      hx-get="{{.BasePath}}/admin/content" hx-target="#post-results" hx-select="#post-results" hx-swap="outerHTML"
+                      hx-select-oob="#filter-label" hx-push-url="true"
+                      hx-trigger="submit, input changed delay:350ms from:#filter-search, change from:select">
+                    <input type="hidden" name="tab" value="posts">
+
+                    <div class="content-filter-row">
+                        <div class="content-filter-search">
+                            <label for="filter-search">{{t "admin.content.search_label"}}</label>
+                            <input type="search" id="filter-search" name="q" value="{{$d.Search}}" placeholder="{{t "admin.content.search_placeholder"}}" autocomplete="off">
+                        </div>
+
+                        <div class="content-filter-selects">
+                            {{- if $d.Years}}
+                            <div class="content-filter-field">
+                                <label for="filter-year">{{t "admin.content.filter_year"}}</label>
+                                <select id="filter-year" name="year">
+                                    <option value="">{{t "admin.content.filter_all_years"}}</option>
+                                    {{- range $d.Years}}
+                                    <option value="{{.}}"{{if eq $d.FilterYear .}} selected{{end}}>{{.}}</option>
+                                    {{- end}}
+                                </select>
+                            </div>
+                            <div class="content-filter-field">
+                                <label for="filter-month">{{t "admin.content.filter_month"}}</label>
+                                <select id="filter-month" name="month">
+                                    <option value="">{{t "admin.content.filter_all_months"}}</option>
+                                    {{- range $m := seq 1 12}}
+                                    <option value="{{$m}}"{{if eq $d.FilterMonth $m}} selected{{end}}>{{t (printf "date.months.%d" (sub $m 1))}}</option>
+                                    {{- end}}
+                                </select>
+                            </div>
+                            {{- end}}
+
+                            {{- if $d.Tags}}
+                            <div class="content-filter-field">
+                                <label for="filter-tag">{{t "admin.content.filter_tag"}}</label>
+                                <select id="filter-tag" name="tag">
+                                    <option value="">{{t "admin.content.filter_all_tags"}}</option>
+                                    {{- range $d.Tags}}
+                                    <option value="{{.Slug}}"{{if eq $d.FilterTag .Slug}} selected{{end}}>{{.Name}}</option>
+                                    {{- end}}
+                                </select>
+                            </div>
+                            {{- end}}
+
+                            <div class="content-filter-field">
+                                <label for="filter-status">{{t "admin.content.filter_status"}}</label>
+                                <select id="filter-status" name="status">
+                                    <option value="">{{t "admin.content.filter_all_statuses"}}</option>
+                                    <option value="published"{{if eq $d.FilterStatus "published"}} selected{{end}}>{{t "admin.editor.status_published"}}</option>
+                                    <option value="scheduled"{{if eq $d.FilterStatus "scheduled"}} selected{{end}}>{{t "admin.editor.status_scheduled"}}</option>
+                                    <option value="draft"{{if eq $d.FilterStatus "draft"}} selected{{end}}>{{t "admin.editor.status_draft"}}</option>
+                                </select>
+                            </div>
+
+                            {{- if $d.UsedLayouts}}
+                            <div class="content-filter-field">
+                                <label for="filter-layout">{{t "admin.content.filter_layout"}}</label>
+                                <select id="filter-layout" name="layout">
+                                    <option value="">{{t "admin.content.filter_all_layouts"}}</option>
+                                    {{- range $d.UsedLayouts}}
+                                    <option value="{{.Name}}"{{if eq $d.FilterLayout .Name}} selected{{end}}>{{.Label}}</option>
+                                    {{- end}}
+                                </select>
+                            </div>
+                            {{- end}}
+
+                            <div class="content-filter-actions">
+                                <button type="submit">{{t "admin.content.filter_apply"}}</button>
+                                {{- if $d.DetailsOpen}}
+                                    <a class="delete" href="{{.BasePath}}/admin/content?tab={{urlquery $d.Tab}}">{{t "admin.content.filter_clear"}}</a>
+                                {{- end}}
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </details>
+
+            <div id="post-results" hx-boost="true" hx-target="#post-results" hx-select="#post-results" hx-swap="outerHTML show:top">
+            {{- if not $d.Posts}}
+                {{- if or $d.FilterLabel $d.Search}}
+                    <p>{{t "admin.content.no_posts_filtered" "label" (or $d.FilterLabel $d.Search)}}</p>
+                {{- else}}
+                    <p>{{t "admin.content.no_posts"}}</p>
+                {{- end}}
+            {{- else}}
+                <ul class="admin-list">
+                    {{- range $d.Posts}}
+                        <li class="admin-list-item">
+                            <a class="admin-list-title" href="{{$.BasePath}}/admin/edit-post?slug={{urlquery .Slug}}" hx-boost="false">
+                                {{.Title}}
+                            </a>
+                            <div class="admin-list-meta">
+                                <span><svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg> {{dateFmt .Date $d.PostDateFormat}}</span>
+                                <span class="status {{.Status}}"><svg class="icon" aria-hidden="true"><use href="#icon-toggle-right"></use></svg> {{t (printf "admin.editor.status_%s" .Status)}}</span>
+                                <a class="admin-list-view" href="{{if eq .Status "published"}}{{$.BasePath}}/{{pathescape .Slug}}{{else}}{{$.BasePath}}/admin/preview?type=post&slug={{urlquery .Slug}}{{end}}" target="_blank" rel="noopener noreferrer" hx-boost="false" title="{{t "admin.content.view_post"}}">
+                                    <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg> {{t "admin.content.view_post"}}
+                                </a>
+                                {{- if .Tags}}
+                                    <span class="admin-list-tags">
+                                        <svg class="icon" aria-hidden="true"><use href="#icon-tag"></use></svg>
+                                        {{- $n := len .Tags}}
+                                        {{- range $i, $tag := .Tags}}{{$slug := tagSlug $tag}}
+                                            <a class="admin-tag-link{{if eq $d.FilterTag $slug}} active{{end}}" href="{{$.BasePath}}/admin/content?tab=posts&amp;tag={{urlquery $slug}}" hx-boost="false">{{$tag}}</a>{{if lt (add $i 1) $n}},{{end}}
+                                        {{- end}}
+                                    </span>
+                                {{- end}}
+                            </div>
+                        </li>
+                    {{- end}}
+                </ul>
+                {{- if or $d.PrevURL $d.NextURL}}
+                    <nav class="pagination">
+                        {{- if $d.PrevURL}}
+                            <a href="{{$d.PrevURL}}">{{t "admin.content.pagination_newer"}}</a>
+                        {{- end}}
+                        {{- if $d.NextURL}}
+                            <a href="{{$d.NextURL}}">{{t "admin.content.pagination_older"}}</a>
+                        {{- end}}
+                    </nav>
+                {{- end}}
+            {{- end}}
+            </div>
+
+        {{- else}}
+
+            {{- if $d.Saved}}
+                <p class="notice" data-auto-dismiss>{{t "admin.content.notice_page_saved"}}</p>
+            {{- end}}
+            {{- if $d.Deleted}}
+                <p class="notice" data-auto-dismiss>{{t "admin.content.notice_page_deleted"}}</p>
+            {{- end}}
+
+            {{- if not $d.Pages}}
+                <p>{{t "admin.content.no_pages"}}</p>
+            {{- else}}
+                <ul class="admin-list">
+                    {{- range $d.Pages}}
+                        <li class="admin-list-item">
+                            <a class="admin-list-title" href="{{$.BasePath}}/admin/edit-page?slug={{urlquery .Page.Slug}}">
+                                {{.Page.Title}}
+                            </a>
+                            <div class="admin-list-meta">
+                                <span class="status {{.Page.Status}}"><svg class="icon" aria-hidden="true"><use href="#icon-toggle-right"></use></svg> {{t (printf "admin.editor.status_%s" .Page.Status)}}</span>
+                                <a class="admin-list-view" href="{{.ViewURL}}" target="_blank" rel="noopener noreferrer" title="{{t "admin.content.view_page"}}">
+                                    <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg> {{t "admin.content.view_page"}}
+                                </a>
+                                {{- if .IsHome}}{{template "page-badge" (dict "Kind" "home" "Slug" .Page.Slug "Icon" "globe" "Label" "admin.content.badge_home" "Popover" "admin.content.badge_home_popover" "DocsLink" $d.DocsLink)}}{{end}}
+                                {{- if .IsBlog}}{{template "page-badge" (dict "Kind" "blog" "Slug" .Page.Slug "Icon" "notebook-pen" "Label" "admin.content.badge_blog" "Popover" "admin.content.badge_blog_popover" "DocsLink" $d.DocsLink)}}{{end}}
+                                {{- if .IsSearch}}{{template "page-badge" (dict "Kind" "search" "Slug" .Page.Slug "Icon" "search" "Label" "admin.content.badge_search" "Popover" "admin.content.badge_search_popover" "DocsLink" $d.DocsLink)}}{{end}}
+                            </div>
+                        </li>
+                    {{- end}}
+                </ul>
+            {{- end}}
+
+        {{- end}}
+    </main>
+{{template "admin-bottom" .}}{{end}}

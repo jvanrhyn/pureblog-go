@@ -1,0 +1,107 @@
+{{define "settings-user"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main class="mid" hx-target="main" hx-select="main" hx-swap="outerHTML">
+        <h1>{{t "admin.settings.user.heading"}}</h1>
+        {{template "notices" .}}
+        {{template "settings-save" .}}
+
+        <form method="post" id="settings-form" action="{{.BasePath}}/admin/settings-user" hx-boost="true">
+            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.user.section_account"}}</span>
+                <label for="admin_username">{{t "admin.settings.user.username"}}</label>
+                <input type="text" id="admin_username" name="admin_username" value="{{.Config.AdminUsername}}" required>
+            </section>
+
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.user.section_password"}}</span>
+                <label for="current_password">{{t "admin.settings.user.current_password"}}</label>
+                <input type="password" id="current_password" name="current_password" autocomplete="current-password">
+
+                <label for="new_password">{{t "admin.settings.user.new_password"}}</label>
+                <input type="password" id="new_password" name="new_password" autocomplete="new-password">
+
+                <label for="confirm_password">{{t "admin.settings.user.confirm_password"}}</label>
+                <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password">
+            </section>
+        </form>
+
+        <section class="section-divider">
+            <span class="title">{{t "admin.settings.user.mfa_section_title"}}</span>
+
+            {{- if $d.NewBackupCodes}}
+                <div class="notice" style="margin-bottom: 1.5rem;">
+                    <strong>{{t "admin.settings.user.mfa_backup_codes_heading"}}</strong>
+                    <p>{{t "admin.settings.user.mfa_backup_codes_warning"}}</p>
+                    <pre style="background: var(--bg-color); padding: 1rem; font-size: 1.1rem; line-height: 1.8; user-select: all; border: 1px dashed var(--border-color); margin: 0.75rem 0;"><code>{{$d.BackupCodesStr}}</code></pre>
+                    <button type="button" class="link-button copy-markdown" data-markdown="{{$d.BackupCodesStr}}" data-copy="{{t "admin.settings.user.mfa_copy_codes"}}" data-copied="{{t "admin.settings.user.mfa_copied"}}">
+                        <svg class="icon" aria-hidden="true"><use href="#icon-copy"></use></svg> {{t "admin.settings.user.mfa_copy_codes"}}
+                    </button>
+                </div>
+            {{- end}}
+
+            {{- if $d.MFAEnabled}}
+                <p>
+                    <span style="display: inline-flex; align-items: center; gap: 0.35rem; color: #2e7d32; font-weight: bold;">
+                        <svg class="icon" aria-hidden="true"><use href="#icon-circle-check"></use></svg>
+                        {{t "admin.settings.user.mfa_status_enabled"}}
+                    </span>
+                </p>
+                <p>{{t "admin.settings.user.mfa_enabled_desc"}}</p>
+                <br>
+
+                <details style="margin-bottom: 1.25rem;">
+                    <summary style="cursor: pointer; font-weight: bold;">{{t "admin.settings.user.mfa_regenerate_codes_title"}}</summary>
+                    <form method="post" style="margin-top: 1rem;" action="{{.BasePath}}/admin/settings-user" hx-boost="true">
+                        <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                        <input type="hidden" name="mfa_action" value="regenerate_backup_codes">
+                        <label for="mfa_regenerate_password">{{t "admin.settings.user.mfa_confirm_password_label"}}</label>
+                        <input type="password" id="mfa_regenerate_password" name="mfa_regenerate_password" required>
+                        <button type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-save"></use></svg> {{t "admin.settings.user.mfa_regenerate_codes_btn"}}</button>
+                    </form>
+                </details>
+
+                <details>
+                    <summary style="cursor: pointer; font-weight: bold; color: var(--delete-color, inherit);">{{t "admin.settings.user.mfa_disable_title"}}</summary>
+                    <form method="post" style="margin-top: 1rem;" action="{{.BasePath}}/admin/settings-user" hx-boost="true">
+                        <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                        <input type="hidden" name="mfa_action" value="disable_mfa">
+                        <label for="mfa_disable_password">{{t "admin.settings.user.mfa_confirm_password_label"}}</label>
+                        <input type="password" id="mfa_disable_password" name="mfa_disable_password" required>
+                        <button type="submit" class="delete"><svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg> {{t "admin.settings.user.mfa_disable_btn"}}</button>
+                    </form>
+                </details>
+            {{- else if $d.SettingUp}}
+                <p>{{t "admin.settings.user.mfa_setup_instructions"}}</p>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start; margin: 1.5rem 0;">
+                    <div style="background: #ffffff; padding: 0.75rem; border: 1px solid var(--border-color); display: inline-block; border-radius: 4px;">
+                        {{$d.QRCode}}
+                    </div>
+                    <div style="flex: 1; min-width: 250px;">
+                        <p style="margin-top: 0;">{{t "admin.settings.user.mfa_manual_entry_intro"}}</p>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0 1.25rem 0;">
+                            <code style="font-size: 1.15rem; font-weight: bold; padding: 0.35rem 0.6rem; letter-spacing: 0.05em; user-select: all;">{{$d.Secret}}</code>
+                            <button type="button" class="link-button copy-markdown" data-markdown="{{$d.Secret}}" data-copy="{{t "admin.settings.user.mfa_copy"}}" data-copied="{{t "admin.settings.user.mfa_copied"}}">
+                                <svg class="icon" aria-hidden="true"><use href="#icon-copy"></use></svg> {{t "admin.settings.user.mfa_copy"}}
+                            </button>
+                        </div>
+
+                        <form method="post" action="{{.BasePath}}/admin/settings-user" hx-boost="true">
+                            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                            <input type="hidden" name="mfa_action" value="confirm_setup">
+                            <label for="mfa_code">{{t "admin.settings.user.mfa_enter_code_label"}}</label>
+                            <input type="text" id="mfa_code" name="mfa_code" autofocus inputmode="numeric" autocomplete="one-time-code" placeholder="123456" required>
+                            <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem;">
+                                <button type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"></use></svg> {{t "admin.settings.user.mfa_activate_btn"}}</button>
+                                <a href="{{.BasePath}}/admin/settings-user?cancel_mfa_setup=1" class="button link-button"><svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg> {{t "admin.settings.user.mfa_cancel_btn"}}</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {{- else}}
+                <p>{{t "admin.settings.user.mfa_disabled_desc"}}</p>
+                <a href="{{.BasePath}}/admin/settings-user?setup_mfa=1" class="button"><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"></use></svg> {{t "admin.settings.user.mfa_setup_btn"}}</a>
+            {{- end}}
+        </section>
+    </main>
+{{template "admin-bottom" .}}{{end}}

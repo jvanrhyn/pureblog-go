@@ -1,0 +1,123 @@
+{{define "index"}}{{template "header" .}}{{template "masthead" .}}
+    <main>
+        {{- if .IsTag}}
+        <!-- Tag archive view -->
+            <h1 >{{if .TagName}}Tag: {{.TagName}}{{else}}Tags{{end}}</h1>
+            {{- if not .TagSlug}}
+                <p>{{t "frontend.no_tag_selected"}}</p>
+            {{- else if not .List.Posts}}
+                <p>{{t "frontend.no_posts_for_tag"}}</p>
+            {{- else}}
+                {{template "post-list" (dict "Page" . "List" .List)}}
+            {{- end}}
+        {{- else}}
+            <!-- Home page list view -->
+            {{- if not .HideFeed}}
+                {{template "post-list" (dict "Page" . "List" .List)}}
+            {{- end}}
+        {{- end}}
+    </main>
+    {{footer .}}
+</body>
+</html>
+{{end}}
+
+{{define "post-body"}}
+            <article>
+                <h1>{{.Post.Title}}</h1>
+                {{- if or .Post.Date .Config.ShowReadingTime}}
+                    <p class="post-date">
+                        {{- if .Post.Date}}
+                            <svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg> <time datetime="{{isoDate .Post.Date}}">{{date .Post.Date}}</time>
+                        {{- end}}
+                        {{- if .Config.ShowReadingTime}}
+                            {{- if .Post.Date}} &nbsp;|&nbsp; {{end}}<svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg> {{readingTime .Post.Content}}
+                        {{- end}}
+                    </p>
+                {{- end}}
+
+                {{.Content}}
+                {{postMeta .}}
+            </article>
+{{end}}
+
+{{define "post"}}{{template "header" .}}{{template "masthead" .}}
+    <main>
+        {{- if not .Post}}
+            <h2>{{t "frontend.post_not_found"}}</h2>
+            <p>{{t "frontend.post_not_found_detail"}}</p>
+        {{- else if .LayoutName}}
+            {{renderLayout .}}
+        {{- else}}
+            {{template "post-body" .}}
+        {{- end}}
+        {{- if .IsAdmin}}
+            <a class="admin-edit-link" href="{{.BasePath}}/admin/edit-post?slug={{with .Post}}{{urlquery .Slug}}{{end}}">
+                <svg class="icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+                <span>{{t "frontend.edit_post"}}</span>
+            </a>
+        {{- end}}
+    </main>
+    {{footer .}}
+</body>
+</html>
+{{end}}
+
+{{define "page"}}{{template "header" .}}{{template "masthead" .}}
+    <main>
+        {{- if not .Page}}
+            <h2>{{t "frontend.page_not_found"}}</h2>
+            <p>{{t "frontend.page_not_found_detail"}}</p>
+        {{- else}}
+            <article>
+                {{.Content}}
+                {{- with .BlogFeed}}
+                    <section class="blog-feed">
+                        {{template "post-list" (dict "Page" $ "List" .)}}
+                    </section>
+                {{- end}}
+                {{- with .Search}}
+                    <section class="site-search">
+                        <form class="site-search-form" method="get" action="{{.Action}}"
+                              hx-get="{{.Action}}" hx-target="#search-results" hx-select="#search-results" hx-swap="outerHTML"
+                              hx-push-url="true" hx-trigger="submit, input changed delay:400ms from:#search-query">
+                            <label class="hidden" for="search-query">{{t "frontend.search_label"}}</label>
+                            <input type="search" id="search-query" name="q" value="{{.Query}}" placeholder="{{t "frontend.search_placeholder"}}">
+                            <button type="submit">{{t "frontend.search_button"}}</button>
+                        </form>
+                        <div id="search-results">
+                        {{- if not .Query}}
+                            <p>{{t "frontend.search_empty"}}</p>
+                        {{- else if not .Results.Posts}}
+                            <p>{{t "frontend.no_posts_found" "search" .Query}}</p>
+                        {{- else}}
+                            <p>{{if eq .Total 1}}{{t "frontend.search_result" "n" .Total}}{{else}}{{t "frontend.search_results" "n" .Total}}{{end}}</p>
+                            {{template "post-list" (dict "Page" $ "List" .Results)}}
+                        {{- end}}
+                        </div>
+                    </section>
+                {{- end}}
+                {{- if .IsAdmin}}
+                <a class="admin-edit-link" href="{{.BasePath}}/admin/edit-page?slug={{urlquery .Page.Slug}}">
+                    <svg class="icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+                    <span>{{t "frontend.edit_page"}}</span>
+                </a>
+                {{- end}}
+            </article>
+        {{- end}}
+    </main>
+    {{footer .}}
+</body>
+</html>
+{{end}}
+
+{{define "404"}}{{template "header" .}}{{template "masthead" .}}
+    <main>
+        <h1>{{t "frontend.page_not_found"}}</h1>
+        <p>{{t "frontend.page_not_found_detail"}}</p>
+    </main>
+    {{footer .}}
+</body>
+</html>
+{{end}}
+

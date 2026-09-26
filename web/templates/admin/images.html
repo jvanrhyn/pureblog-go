@@ -1,0 +1,109 @@
+{{define "images"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main class="mid">
+        <h1>{{t "admin.images.heading"}}</h1>
+
+        {{- if $d.Deleted}}
+            <p class="notice" data-auto-dismiss>{{t "admin.images.deleted"}}</p>
+        {{- end}}
+        {{- if $d.DeleteError}}
+            <p class="notice delete" data-auto-dismiss>{{$d.DeleteError}}</p>
+        {{- end}}
+
+        <form method="get" action="{{.BasePath}}/admin/images" class="image-search-form"
+              hx-get="{{.BasePath}}/admin/images" hx-target="#image-library" hx-select="#image-library" hx-swap="outerHTML"
+              hx-push-url="true" hx-trigger="submit, input changed delay:350ms from:#q">
+            <label class="hidden" for="q">{{t "admin.images.search_label"}}</label>
+            <input type="search" id="q" name="q" value="{{$d.Search}}" placeholder="{{t "admin.images.search_placeholder"}}">
+            <button type="submit">
+                <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+                {{t "admin.images.search_label"}}
+            </button>
+            {{- if $d.Search}}
+                <a href="{{.BasePath}}/admin/images" class="link-button delete">
+                    <svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg>
+                    {{t "admin.images.clear_search"}}
+                </a>
+            {{- end}}
+        </form>
+
+        <div id="image-library">
+        {{- if not $d.Images}}
+            <p>{{t "admin.images.no_images"}}</p>
+        {{- else}}
+            <div class="image-library-grid">
+                {{- range $i, $img := $d.Images}}
+                    {{- $dialogID := printf "delete-warn-%d" $i}}
+                    <div class="image-library-card">
+                        <img src="{{$img.URL}}" class="image-library-thumb" alt="{{$img.Filename}}" loading="lazy">
+                        <div class="image-library-info">
+                            <code class="image-library-name" title="{{$img.Filename}}">{{$img.Filename}}</code>
+                            <span class="image-library-slug">{{t "admin.images.slug_label"}} {{$img.Slug}}</span>
+                        </div>
+                        <div class="image-library-actions">
+                            <button type="button" class="link-button copy-markdown" data-markdown="{{$img.Markdown}}" data-copy="{{t "admin.editor.copy"}}" data-copied="{{t "admin.editor.js_copied"}}" data-copy-failed="{{t "admin.editor.js_copy_failed"}}">
+                                <svg class="icon" aria-hidden="true"><use href="#icon-copy"></use></svg>
+                                {{t "admin.editor.copy"}}
+                            </button>
+
+                            {{- if $img.UsedIn}}
+                                <button type="button" class="link-button delete" onclick="document.getElementById('{{$dialogID}}').showModal()">
+                                    <svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg>
+                                    {{t "admin.editor.delete"}}
+                                </button>
+                                <dialog id="{{$dialogID}}" class="image-delete-dialog" onclick="if (event.target === this) this.close()">
+                                    <p>{{t "admin.images.delete_used_warning"}}</p>
+                                    <ul>
+                                        {{- range $img.UsedIn}}
+                                        <li>
+                                            <a href="{{$.BasePath}}/admin/edit-{{.Type}}?slug={{urlquery .Slug}}" target="_blank" rel="noopener noreferrer">
+                                                {{.Title}}
+                                                <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
+                                            </a>
+                                        </li>
+                                        {{- end}}
+                                    </ul>
+                                    <div class="image-delete-dialog-actions">
+                                        {{template "library-delete-form" (dict "Page" $ "Image" $img "Class" "delete" "Label" (t "admin.images.delete_anyway") "Confirm" "")}}
+                                        <button type="button" onclick="this.closest('dialog').close()">
+                                            {{t "admin.images.cancel"}}
+                                        </button>
+                                    </div>
+                                </dialog>
+                            {{- else}}
+                                {{template "library-delete-form" (dict "Page" $ "Image" $img "Class" "link-button delete" "Label" (t "admin.editor.delete") "Confirm" (t "admin.images.delete_confirm"))}}
+                            {{- end}}
+                        </div>
+                    </div>
+                {{- end}}
+            </div>
+            {{- if or $d.PrevURL $d.NextURL}}
+                <nav class="pagination" hx-boost="true" hx-target="#image-library" hx-select="#image-library" hx-swap="outerHTML show:top">
+                    {{- if $d.PrevURL}}
+                        <a href="{{$d.PrevURL}}">{{t "admin.images.pagination_prev"}}</a>
+                    {{- else}}
+                        <span></span>
+                    {{- end}}
+                    {{- if $d.NextURL}}
+                        <a href="{{$d.NextURL}}">{{t "admin.images.pagination_next"}}</a>
+                    {{- end}}
+                </nav>
+            {{- end}}
+        {{- end}}
+        </div>
+    </main>
+{{template "admin-bottom" .}}{{end}}
+
+{{define "library-delete-form"}}
+<form method="post" action="{{.Page.BasePath}}/admin/delete-image-library" class="inline-form"
+      hx-post="{{.Page.BasePath}}/admin/delete-image-library" hx-target="main" hx-select="main" hx-swap="outerHTML" hx-push-url="false"
+      {{- if .Confirm}} hx-confirm="{{.Confirm}}"{{end}}>
+    <input type="hidden" name="slug" value="{{.Image.Slug}}">
+    <input type="hidden" name="filename" value="{{.Image.Filename}}">
+    <input type="hidden" name="return" value="{{.Page.Data.ReturnURL}}">
+    <input type="hidden" name="csrf_token" value="{{.Page.CSRF}}">
+    <button type="submit" class="{{.Class}}">
+        <svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg>
+        {{.Label}}
+    </button>
+</form>
+{{end}}

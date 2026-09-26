@@ -1,0 +1,27 @@
+{{define "masthead"}}
+<header>
+    {{- if eq .SiteTitleTag "p"}}
+    <p class="site-title"><a href="{{.BasePath}}/">{{.SiteTitle}}</a></p>
+    {{- else}}
+    <h1 class="site-title"><a href="{{.BasePath}}/">{{.SiteTitle}}</a></h1>
+    {{- end}}
+    {{- if .SiteTagline}}
+    <p class="tagline">{{.SiteTagline}}</p>
+    {{- end}}
+    {{- if .ShowNav}}
+        <nav class="site-nav">
+            <ul>
+                {{- if not .CustomNavOnly}}
+                    <li><a href="{{.BasePath}}/"{{if .HomeCurrent}} class="current"{{end}}>{{t "frontend.nav_home"}}</a></li>
+                    {{- range .NavPages}}
+                    <li><a href="{{.URL}}"{{if .Current}} class="current"{{end}}>{{.Label}}</a></li>
+                    {{- end}}
+                {{- end}}
+                {{- range .CustomNav}}
+                    <li><a href="{{.URL}}"{{if .Current}} class="current"{{end}}>{{.Label}}</a></li>
+                {{- end}}
+            </ul>
+        </nav>
+    {{- end}}
+</header>
+{{end}}

@@ -1,0 +1,40 @@
+{{define "settings-updates"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main class="mid">
+        <h1>{{t "admin.settings.updates.heading"}}</h1>
+
+        <section class="section-divider" id="update-status">
+            <span class="title">{{t "admin.settings.updates.section_version"}}</span>
+            <p><strong>{{t "admin.settings.updates.current_version"}}</strong> {{$d.Current}}</p>
+            {{- if $d.Repo}}
+            <p><strong>{{t "admin.settings.updates.repository"}}</strong> <a href="https://github.com/{{$d.Repo}}" target="_blank" rel="noopener noreferrer">github.com/{{$d.Repo}}</a></p>
+            <p>
+                <a class="button" href="{{.BasePath}}/admin/settings-updates?check=1"
+                   hx-get="{{.BasePath}}/admin/settings-updates?check=1" hx-target="#update-status" hx-select="#update-status" hx-swap="outerHTML">
+                    <svg class="icon" aria-hidden="true"><use href="#icon-upgrade"></use></svg>
+                    {{t "admin.settings.updates.check_release"}}
+                </a>
+            </p>
+            {{- else}}
+            <p class="tip">Update checks are disabled. Start pureblog-go with <code>-release-repo owner/repo</code> to check a GitHub repository for new releases.</p>
+            {{- end}}
+
+            {{- if and $d.Checked (not $d.Release.OK)}}
+                <p class="notice delete">{{or $d.Release.Error (t "admin.settings.updates.error_check")}}</p>
+            {{- end}}
+
+            {{- if $d.Release.OK}}
+                {{- if $d.UpdateAvailable}}
+                    <h3 class="no-top-margin">🎉 New Version Available (v{{$d.LatestDisplay}})</h3>
+                    <p>Download the new binary from the release page and replace the running one, then restart PureBlog-Go. Your content and settings are not touched.</p>
+                {{- else}}
+                    <p>{{t "admin.settings.updates.already_latest_version" "tag" $d.Release.Tag}}</p>
+                {{- end}}
+                <p><strong>{{t "admin.settings.updates.latest_release"}}</strong> {{or $d.Release.Tag $d.Release.Name}}</p>
+                {{- if $d.Published}}
+                    <p><strong>{{t "admin.settings.updates.published"}}</strong> {{$d.Published}}</p>
+                {{- end}}
+                <p><a href="{{$d.Release.URL}}" target="_blank" rel="noopener noreferrer">{{t "admin.settings.updates.view_release_notes"}}</a></p>
+            {{- end}}
+        </section>
+    </main>
+{{template "admin-bottom" .}}{{end}}

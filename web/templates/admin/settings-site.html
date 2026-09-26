@@ -1,0 +1,221 @@
+{{define "asset-field"}}
+{{- if .Value}}
+    <p class="current-image">{{t "admin.settings.site.current"}}: <a href="{{.Value}}" target="_blank" rel="noopener noreferrer">{{.Value}}</a> <a href="{{.BasePath}}/admin/settings-site?delete_asset={{.Key}}&csrf_token={{urlquery .CSRF}}" class="link-button delete" onclick="return confirm({{t "admin.images.delete_confirm"}});"><svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg> {{t "admin.editor.delete"}}</a></p>
+{{- end}}
+{{end}}
+
+{{define "settings-site"}}{{template "admin-top" .}}{{$d := .Data}}{{$c := .Config}}
+    <main class="mid">
+        <h1>{{t "admin.settings.site.heading"}}</h1>
+        {{template "notices" .}}
+        {{template "settings-save" .}}
+
+        <form method="post" enctype="multipart/form-data" id="settings-form" action="{{.BasePath}}/admin/settings-site"
+              hx-boost="true" hx-target="main" hx-select="main" hx-swap="outerHTML">
+            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.site.section_title"}}</span>
+                <label for="site_title">{{t "admin.settings.site.site_title"}}</label>
+                <input type="text" id="site_title" name="site_title" value="{{$c.SiteTitle}}" required>
+
+                <label for="site_tagline">{{t "admin.settings.site.tagline"}}</label>
+                <input type="text" id="site_tagline" name="site_tagline" value="{{$c.SiteTagline}}">
+
+                <label for="site_description">{{t "admin.settings.site.description"}}</label>
+                <textarea id="site_description" name="site_description" rows="4">{{$c.SiteDescription}}</textarea>
+
+                <label for="site_email">{{t "admin.settings.site.email"}}</label>
+                <input type="email" id="site_email" name="site_email" value="{{$c.SiteEmail}}" placeholder="you@example.com">
+
+                <label for="posts_per_page">{{t "admin.settings.site.posts_per_page"}}</label>
+                <input type="number" id="posts_per_page" name="posts_per_page" min="1" max="100" value="{{$c.PostsPerPage}}">
+
+                <label for="search_excerpt_length">{{t "admin.settings.site.search_excerpt_length"}}</label>
+                <input type="number" id="search_excerpt_length" name="search_excerpt_length" min="0" value="{{$c.SearchExcerptLength}}">
+                <p class="tip">{{t "admin.settings.site.search_excerpt_length_tip"}}</p>
+
+                <label class="inline-checkbox" for="search_include_pages">
+                    <input type="checkbox" id="search_include_pages" name="search_include_pages"{{if $c.SearchIncludePages}} checked{{end}}>
+                    {{t "admin.settings.site.search_include_pages"}}
+                </label>
+
+                <label for="language">{{t "admin.settings.site.language"}}</label>
+                <select id="language" name="language">
+                    {{- range $d.Languages}}
+                    <option value="{{.Code}}"{{if eq .Code $c.Language}} selected{{end}}>{{.Name}} ({{.Code}})</option>
+                    {{- end}}
+                </select>
+
+                <label for="timezone">{{t "admin.settings.site.timezone"}} <span class="tip">(<a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank" rel="noopener noreferrer">{{t "admin.settings.site.tip_timezone_link"}}</a>)</span></label>
+                <input type="text" id="timezone" name="timezone" value="{{$c.Timezone}}" placeholder="UTC" required>
+
+                <label for="date_format">{{t "admin.settings.site.date_format"}} <span class="tip">(<a href="https://www.php.net/manual/en/datetime.format.php" target="_blank" rel="noopener noreferrer">{{t "admin.settings.site.tip_date_format_link"}}</a>)</span></label>
+                <input type="text" id="date_format" name="date_format" value="{{$c.DateFormat}}" placeholder="F j, Y" required>
+
+                <label class="inline-checkbox" for="show_reading_time">
+                    <input type="checkbox" id="show_reading_time" name="show_reading_time"{{if $c.ShowReadingTime}} checked{{end}}>
+                    {{t "admin.settings.site.show_reading_time"}}
+                </label>
+
+                <label for="homepage_slug">{{t "admin.settings.site.homepage"}}</label>
+                <select id="homepage_slug" name="homepage_slug">
+                    <option value="">{{t "admin.settings.site.homepage_default"}}</option>
+                    {{- range $d.Pages}}
+                    <option value="{{.Slug}}"{{if eq $c.HomepageSlug .Slug}} selected{{end}}>
+                        {{.Title}} ({{.Slug}})
+                    </option>
+                    {{- end}}
+                </select>
+                <label for="blog_page_slug">{{t "admin.settings.site.blog_page"}}</label>
+                <select id="blog_page_slug" name="blog_page_slug">
+                    <option value="">{{t "admin.settings.site.blog_use_homepage"}}</option>
+                    <option value="__hidden__"{{if eq $c.BlogPageSlug "__hidden__"}} selected{{end}}>{{t "admin.settings.site.blog_hidden"}}</option>
+                    {{- range $d.Pages}}
+                    <option value="{{.Slug}}"{{if eq $c.BlogPageSlug .Slug}} selected{{end}}>
+                        {{.Title}} ({{.Slug}})
+                    </option>
+                    {{- end}}
+                </select>
+                <div id="enable_blog_posts_container" style="{{if ne $c.BlogPageSlug "__hidden__"}}display: none;{{end}} margin-top: -0.75rem; margin-bottom: 1.5rem;">
+                    <label class="inline-checkbox" for="enable_blog_posts">
+                        <input type="checkbox" id="enable_blog_posts" name="enable_blog_posts"{{if $c.EnableBlogPosts}} checked{{end}}>
+                        {{t "admin.settings.site.enable_blog_posts"}}
+                    </label>
+                </div>
+
+                <label for="search_page_slug">{{t "admin.settings.site.search_page"}}</label>
+                <select id="search_page_slug" name="search_page_slug">
+                    <option value="">{{t "admin.settings.site.search_page_none"}}</option>
+                    {{- range $d.Pages}}
+                    <option value="{{.Slug}}"{{if eq $c.SearchPageSlug .Slug}} selected{{end}}>
+                        {{.Title}} ({{.Slug}})
+                    </option>
+                    {{- end}}
+                </select>
+
+                <label for="base_url">{{t "admin.settings.site.base_url"}}</label>
+                <input type="text" id="base_url" name="base_url" value="{{$c.BaseURL}}">
+
+                <label for="favicon">{{t "admin.settings.site.favicon"}} <span class="tip">({{t "admin.settings.site.tip_favicon"}})</span></label>
+                <input type="file" id="favicon" name="favicon" accept="image/*">
+                {{template "asset-field" (dict "Key" "favicon" "Value" $c.Assets.Favicon "BasePath" .BasePath "CSRF" .CSRF)}}
+
+                <label for="apple_touch_icon">{{t "admin.settings.site.apple_touch_icon"}} <span class="tip">({{t "admin.settings.site.tip_apple_touch_icon"}})</span></label>
+                <input type="file" id="apple_touch_icon" name="apple_touch_icon" accept="image/png,.png">
+                {{template "asset-field" (dict "Key" "apple_touch_icon" "Value" $c.Assets.AppleTouchIcon "BasePath" .BasePath "CSRF" .CSRF)}}
+
+                <label for="og_image">{{t "admin.settings.site.og_image"}} <span class="tip">({{t "admin.settings.site.tip_og_image"}})</span></label>
+                <input type="file" id="og_image" name="og_image" accept="image/*">
+                <p class="tip">{{t "admin.settings.site.tip_og_image_dynamic"}} <a href="https://docs.pureblog.org/open-graph-images/" target="_blank" rel="noopener noreferrer">{{t "admin.settings.site.tip_og_image_doc_link"}}</a>.</p>
+                {{template "asset-field" (dict "Key" "og_image" "Value" $c.Assets.OGImage "BasePath" .BasePath "CSRF" .CSRF)}}
+
+                <label for="og_image_preferred">{{t "admin.settings.site.og_image_format"}}</label>
+                <select id="og_image_preferred" name="og_image_preferred">
+                    <option value="banner"{{if ne $c.Assets.OGImagePreferred "square"}} selected{{end}}>{{t "admin.settings.site.og_banner"}}</option>
+                    <option value="square"{{if eq $c.Assets.OGImagePreferred "square"}} selected{{end}}>{{t "admin.settings.site.og_square"}}</option>
+                </select>
+
+                <label for="sidebar_logo">{{t "admin.settings.site.sidebar_logo"}} <span class="tip">({{t "admin.settings.site.tip_sidebar_logo"}})</span></label>
+                <input type="file" id="sidebar_logo" name="sidebar_logo" accept="image/*">
+                {{template "asset-field" (dict "Key" "sidebar_logo" "Value" $c.Assets.SidebarLogo "BasePath" .BasePath "CSRF" .CSRF)}}
+
+                <label for="custom_nav">{{t "admin.settings.site.custom_nav"}} <span class="tip">({{t "admin.settings.site.tip_one_per_line"}})</span></label>
+                <textarea id="custom_nav" name="custom_nav" rows="4" placeholder="GitHub | https://github.com/you&#10;Projects | /projects">{{$c.CustomNav}}</textarea>
+
+                <label class="inline-checkbox" for="custom_nav_only" style="margin-top: -0.5rem; margin-bottom: 1.25rem;">
+                    <input type="checkbox" id="custom_nav_only" name="custom_nav_only"{{if $c.CustomNavOnly}} checked{{end}}>
+                    {{t "admin.settings.site.custom_nav_only"}}
+                </label>
+
+                <label for="custom_routes">{{t "admin.settings.site.custom_routes"}} <span class="tip">({{t "admin.settings.site.tip_one_per_line"}})</span></label>
+                <textarea id="custom_routes" name="custom_routes" rows="4" placeholder="/archive | /content/includes/archive.html&#10;/reading | reading.html">{{$c.CustomRoutes}}</textarea>
+            </section>
+
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.site.community_section"}}</span>
+                <label class="inline-checkbox" for="purecomments_enabled">
+                    <input type="checkbox" id="purecomments_enabled" name="purecomments_enabled"{{if $c.Community.PurecommentsEnabled}} checked{{end}}>
+                    {{t "admin.settings.site.purecomments_enable"}}
+                </label>
+
+                <div id="purecomments_url_container" style="{{if not $c.Community.PurecommentsEnabled}}display: none;{{end}} margin-top: -0.75rem; margin-bottom: 1.5rem;">
+                    <label for="purecomments_url">{{t "admin.settings.site.purecomments_url"}}</label>
+                    <input type="url" id="purecomments_url" name="purecomments_url" value="{{$c.Community.PurecommentsURL}}" placeholder="https://comments.example.com"{{if $c.Community.PurecommentsEnabled}} required{{else}} disabled{{end}}>
+                </div>
+            </section>
+
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.site.header_injects"}}</span>
+                <label for="head_inject_page">{{t "admin.settings.site.head_inject_page_label"}} <span class="tip">({{t "admin.settings.site.tip_optional"}})</span></label>
+                <textarea id="head_inject_page" name="head_inject_page" rows="6" placeholder="&lt;meta name=&quot;x-custom&quot; content=&quot;value&quot;&gt;">{{$c.HeadInjectPage}}</textarea>
+
+                <label for="head_inject_post">{{t "admin.settings.site.head_inject_post_label"}} <span class="tip">({{t "admin.settings.site.tip_optional"}})</span></label>
+                <textarea id="head_inject_post" name="head_inject_post" rows="6" placeholder="&lt;link rel=&quot;stylesheet&quot; href=&quot;/content/css/comments.css&quot;&gt;">{{$c.HeadInjectPost}}</textarea>
+            </section>
+
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.site.footer_injects"}}</span>
+                <label for="footer_inject_page">{{t "admin.settings.site.footer_inject_page_label"}} <span class="tip">({{t "admin.settings.site.tip_optional"}})</span></label>
+                <textarea id="footer_inject_page" name="footer_inject_page" rows="6" placeholder="&lt;script src=&quot;/assets/js/page-only.js&quot; defer&gt;&lt;/script&gt;">{{$c.FooterInjectPage}}</textarea>
+
+                <label for="footer_inject_post">{{t "admin.settings.site.footer_inject_post_label"}} <span class="tip">({{t "admin.settings.site.tip_optional"}})</span></label>
+                <textarea id="footer_inject_post" name="footer_inject_post" rows="6" placeholder="&lt;script src=&quot;/assets/js/post-only.js&quot; defer&gt;&lt;/script&gt;">{{$c.FooterInjectPost}}</textarea>
+            </section>
+
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.site.admin_ui_section"}}</span>
+                <label for="admin_homepage">{{t "admin.settings.site.admin_homepage"}}</label>
+                <select id="admin_homepage" name="admin_homepage">
+                    <option value="dashboard"{{if ne $c.AdminHomepage "content"}} selected{{end}}>{{t "admin.settings.site.admin_homepage_dashboard"}}</option>
+                    <option value="content"{{if eq $c.AdminHomepage "content"}} selected{{end}}>{{t "admin.settings.site.admin_homepage_content"}}</option>
+                </select>
+                <label class="inline-checkbox" for="admin_hide_dashboard">
+                    <input type="checkbox" id="admin_hide_dashboard" name="admin_hide_dashboard"{{if $c.AdminHideDashboard}} checked{{end}}{{if ne $c.AdminHomepage "content"}} disabled{{end}}>
+                    {{t "admin.settings.site.admin_hide_dashboard"}}
+                </label>
+            </section>
+
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.site.cache_section"}}</span>
+                <label class="inline-checkbox" for="cache_enabled">
+                    <input type="checkbox" id="cache_enabled" name="cache_enabled" {{if $c.Cache.Enabled}}checked{{end}}>
+                    {{t "admin.settings.site.cache_enable"}}
+                </label>
+
+                <label for="rss_ttl">{{t "admin.settings.site.rss_ttl"}} <span class="tip">({{t "admin.settings.site.tip_rss_ttl"}})</span></label>
+                <input type="number" id="rss_ttl" name="rss_ttl" min="0" value="{{$c.Cache.RSSTTL}}">
+            </section>
+        </form>
+    <script>
+    (function () {
+        const adminHomepageSelect = document.getElementById('admin_homepage');
+        const hideDashboardCheckbox = document.getElementById('admin_hide_dashboard');
+        adminHomepageSelect.addEventListener('change', function () {
+            hideDashboardCheckbox.disabled = this.value !== 'content';
+            if (hideDashboardCheckbox.disabled) hideDashboardCheckbox.checked = false;
+        });
+
+        const blogPageSlugSelect = document.getElementById('blog_page_slug');
+        const enableBlogPostsContainer = document.getElementById('enable_blog_posts_container');
+        const enableBlogPostsCheckbox = document.getElementById('enable_blog_posts');
+        blogPageSlugSelect.addEventListener('change', function () {
+            if (this.value === '__hidden__') {
+                enableBlogPostsContainer.style.display = '';
+            } else {
+                enableBlogPostsContainer.style.display = 'none';
+                enableBlogPostsCheckbox.checked = true;
+            }
+        });
+
+        const pureCommentsEnabledCheckbox = document.getElementById('purecomments_enabled');
+        const pureCommentsUrlContainer = document.getElementById('purecomments_url_container');
+        const pureCommentsUrlInput = document.getElementById('purecomments_url');
+        pureCommentsEnabledCheckbox.addEventListener('change', function () {
+            pureCommentsUrlContainer.style.display = this.checked ? '' : 'none';
+            pureCommentsUrlInput.disabled = !this.checked;
+            pureCommentsUrlInput.required = this.checked;
+        });
+    })();
+    </script>
+    </main>
+{{template "admin-bottom" .}}{{end}}

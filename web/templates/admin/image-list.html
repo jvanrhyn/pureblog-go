@@ -1,0 +1,104 @@
+{{/* The editor sidebar image list. Re-rendered by htmx after deleting an
+     image or toggling the feature image. */}}
+{{define "image-list"}}
+<div id="image-list">
+    {{- if .Error}}
+        <p class="notice delete" data-auto-dismiss>{{.Error}}</p>
+    {{- end}}
+    {{- if .OOB}}
+        <input type="hidden" id="feature-image-value" name="feature_image" form="{{if eq .Type "page"}}page-form{{else}}editor-form{{end}}" value="{{.FeatureImage}}" hx-swap-oob="true">
+    {{- end}}
+    {{- if not .Images}}
+        <p>{{t "admin.editor.no_images"}}</p>
+    {{- else}}
+        <p>{{t "admin.editor.attached_images"}}</p>
+        <ul class="image-list">
+        {{- $list := .}}
+        {{- range .Images}}
+            <li{{if .IsFeature}} class="is-feature"{{end}}>
+                <div class="image-list-top">
+                    <img src="{{.URL}}" width="30" height="30" class="image-list-preview" alt="{{.Filename}}" loading="lazy"/>
+                    <code>{{.Filename}}</code>
+                </div>
+                <div class="image-list-actions">
+                    <label class="feature-image-label">
+                        <input type="checkbox" class="feature-image-check"{{if .IsFeature}} checked{{end}}
+                               hx-post="{{$list.BasePath}}/admin/set-feature-image" hx-target="#image-list" hx-swap="outerHTML"
+                               hx-vals='{{json (dict "slug" $list.Slug "editor_type" $list.Type "date" $list.Date "filename" (featureToggle .))}}'
+                               {{- if and $list.FeatureImage (not .IsFeature)}} hx-confirm="{{t "admin.editor.js_feature_image_confirm" "filename" .Filename "current" (baseName $list.FeatureImage)}}"{{end}}>
+                        {{t "admin.editor.feature_image"}}
+                    </label>
+                    <button type="button" class="link-button copy-markdown" data-markdown="{{.Markdown}}" data-copy="{{t "admin.editor.copy"}}" data-copied="{{t "admin.editor.js_copied"}}" data-copy-failed="{{t "admin.editor.js_copy_failed"}}"><svg class="icon" aria-hidden="true"><use href="#icon-copy"></use></svg> {{t "admin.editor.copy"}}</button>
+                    <form method="post" action="{{$list.BasePath}}/admin/delete-image" class="inline-form"
+                          hx-post="{{$list.BasePath}}/admin/delete-image" hx-target="#image-list" hx-swap="outerHTML"
+                          hx-confirm="{{if eq $list.Type "page"}}{{t "admin.page_editor.delete_image_confirm"}}{{else}}{{t "admin.post_editor.delete_image_confirm"}}{{end}}">
+                        <input type="hidden" name="slug" value="{{$list.Slug}}">
+                        <input type="hidden" name="date" value="{{$list.Date}}">
+                        <input type="hidden" name="editor_type" value="{{$list.Type}}">
+                        <input type="hidden" name="filename" value="{{.Filename}}">
+                        <input type="hidden" name="csrf_token" value="{{$list.CSRF}}">
+                        <button type="submit" class="link-button delete"><svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg> {{t "admin.editor.delete"}}</button>
+                    </form>
+                </div>
+            </li>
+        {{- end}}
+        </ul>
+    {{- end}}
+</div>
+{{end}}
+
+{{define "editor-images"}}{{$d := .Data}}
+                <section class="sidebar-section">
+                    <div class="section-divider">
+                        <span class="images-title">{{t "admin.editor.images_title"}}</span>
+                        <form method="post" action="{{.BasePath}}/admin/upload-image" enctype="multipart/form-data" class="upload-form">
+                            <input type="hidden" name="slug" value="{{$d.Slug}}">
+                            <input type="hidden" name="date" value="{{$d.Date}}">
+                            <input type="hidden" name="editor_type" value="{{$d.Type}}">
+                            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                            <label class="hidden" for="image">{{t "admin.editor.upload_label"}}</label>
+                            <input type="file" id="image" name="image" accept="image/*,.avif">
+                            <button type="submit" disabled>
+                                <svg class="icon" aria-hidden="true"><use href="#icon-upload"></use></svg>
+                                {{t "admin.editor.upload"}}
+                            </button>
+                        </form>
+                        {{template "image-list" (dict "Type" $d.Type "Slug" $d.Slug "Date" $d.Date "FeatureImage" $d.FeatureImage "Images" $d.Images "CSRF" .CSRF "BasePath" .BasePath)}}
+                    </div>
+                </section>
+{{end}}
+
+{{define "editor-notices"}}{{$d := .Data}}
+                {{- if .Errors}}
+                <div class="notice delete">
+                    <ul>
+                        {{- range .Errors}}
+                        <li>{{.}}</li>
+                        {{- end}}
+                    </ul>
+                </div>
+                {{- end}}
+                {{- if $d.Saved}}
+                    <p class="notice" data-auto-dismiss>{{if eq $d.Type "page"}}{{t "admin.editor.notice_saved_page"}}{{else}}{{t "admin.editor.notice_saved_post"}}{{end}}</p>
+                {{- end}}
+                {{- if $d.Uploaded}}
+                    <p class="notice" data-auto-dismiss>{{t "admin.editor.notice_image_uploaded"}}</p>
+                {{- end}}
+                {{- if $d.UploadError}}
+                    <p class="notice delete" data-auto-dismiss>{{$d.UploadError}}</p>
+                {{- end}}
+{{end}}
+
+{{define "editor-script"}}{{$d := .Data}}
+    <script>
+        window.PureBlogGoEditorConfig = {
+            editorType: {{$d.Type}},
+            formId: {{$d.FormID}},
+            csrfToken: {{.CSRF}},
+            basePath: {{.BasePath}},
+            autosave: {{json $d.Autosave}},
+            strings: {{json $d.Strings}},
+        };
+    </script>
+    <script type="module" src="{{.BasePath}}/admin/js/editor.js?v={{.JSVersion}}"></script>
+{{end}}

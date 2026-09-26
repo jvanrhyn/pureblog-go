@@ -1,0 +1,81 @@
+{{define "edit-page"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main>
+        <div class="editor-grid">
+            <section class="editor-main">
+                <h1>{{t "admin.page_editor.page_title"}}</h1>
+                {{template "editor-notices" .}}
+                <form method="post" class="editor-form" id="page-form">
+                    <input type="hidden" name="original_slug" value="{{$d.OriginalSlug}}">
+                    <input type="hidden" name="original_status" value="{{$d.Status}}">
+                    <input type="hidden" id="feature-image-value" name="feature_image" value="{{$d.FeatureImage}}">
+                    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+
+                    <nav class="editor-actions">
+                        <button class="save" type="submit" form="page-form" aria-label="{{t "admin.page_editor.save"}}">
+                            <svg class="icon" aria-hidden="true"><use href="#icon-save"></use></svg>
+                            {{t "admin.page_editor.save"}}
+                        </button>
+                        <button type="button" id="preview-button" aria-label="{{t "admin.page_editor.preview"}}">
+                            <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
+                            {{t "admin.page_editor.preview"}}
+                        </button>
+                        {{- if and $d.IsEditing $d.Slug}}
+                            <button type="submit" form="delete-page-form" class="link-button delete" aria-label="{{t "admin.page_editor.delete"}}" onclick="return confirm({{t "admin.page_editor.delete_confirm"}});">
+                                <svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg>
+                                {{t "admin.page_editor.delete"}}
+                            </button>
+                        {{- end}}
+                        <span id="autosave-status" class="autosave-status" aria-live="polite"
+                              hx-post="{{.BasePath}}/admin/autosave" hx-trigger="pb:autosave" hx-include="#page-form"
+                              hx-vals='{"editor_type": "page", "action": "save"}' hx-swap="innerHTML"></span>
+                    </nav>
+
+                    <label for="title">{{t "admin.editor.title_label"}}</label>
+                    <input type="text" id="title" name="title" value="{{$d.Title}}" required autocomplete="off">
+
+                    <label for="content">{{t "admin.editor.content_label"}} <span class="tip">(<a target="_blank" rel="noopener noreferrer" href="https://pureblog.org/markdown-helper">{{t "admin.editor.tip_markdown"}}</a>)</span></label>
+                    <textarea id="content" name="content" rows="18" autocomplete="off">{{$d.Content}}</textarea>
+                </form>
+                {{- if and $d.IsEditing $d.Slug}}
+                    <form method="post" action="{{.BasePath}}/admin/delete-content" id="delete-page-form">
+                        <input type="hidden" name="type" value="page">
+                        <input type="hidden" name="slug" value="{{$d.Slug}}">
+                        <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                    </form>
+                {{- end}}
+            </section>
+            <aside class="editor-sidebar">
+                <div class="sidebar-header">
+                    <button type="button" class="sidebar-toggle" id="sidebar-toggle-tab" aria-label="{{t "admin.page_editor.settings_title"}}" title="{{t "admin.page_editor.settings_title"}}">
+                        <svg class="icon close-icon" aria-hidden="true"><use href="#icon-panel-right-close"></use></svg>
+                        <svg class="icon open-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                    </button>
+                    <span class="sidebar-title">{{t "admin.page_editor.settings_title"}}</span>
+                </div>
+                <section class="sidebar-section">
+                    <div class="section-divider">
+                        <label for="slug">{{t "admin.editor.slug_label"}}</label>
+                        <input type="text" id="slug" name="slug" form="page-form" value="{{$d.Slug}}" autocomplete="off">
+
+                        <label for="description">{{t "admin.editor.description_label"}}</label>
+                        <textarea id="description" name="description" form="page-form" rows="3" autocomplete="off">{{$d.Description}}</textarea>
+
+                        <label for="status">{{t "admin.editor.status_label"}}</label>
+                        <select id="status" name="status" form="page-form">
+                            <option value="draft" {{if eq $d.Status "draft"}}selected{{end}}>{{t "admin.editor.status_draft"}}</option>
+                            <option value="published" {{if eq $d.Status "published"}}selected{{end}}>{{t "admin.editor.status_published"}}</option>
+                        </select>
+
+                        <label for="include_in_nav">{{t "admin.page_editor.nav_label"}}</label>
+                        <select id="include_in_nav" name="include_in_nav" form="page-form">
+                            <option value="yes" {{if $d.IncludeInNav}}selected{{end}}>{{t "admin.page_editor.nav_yes"}}</option>
+                            <option value="no" {{if not $d.IncludeInNav}}selected{{end}}>{{t "admin.page_editor.nav_no"}}</option>
+                        </select>
+                    </div>
+                </section>
+                {{template "editor-images" .}}
+            </aside>
+        </div>
+    </main>
+    {{template "editor-script" .}}
+{{template "admin-bottom" .}}{{end}}

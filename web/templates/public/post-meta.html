@@ -1,0 +1,30 @@
+{{define "post-meta"}}
+{{- with .Post}}{{if .Tags}}
+    <p class="tag-list"><svg class="icon" aria-hidden="true"><use href="#icon-tag"></use></svg> {{tagLinks .Tags}}</p>
+{{- end}}{{end}}
+
+{{- if and .Config.Community.PurecommentsEnabled .Config.Community.PurecommentsURL}}
+    <div id="comments" data-post-slug="{{with .Post}}{{.Slug}}{{end}}"></div>
+    <script src="{{.Config.Community.PurecommentsURL}}/public/embed.js" defer></script>
+{{- end}}
+
+<div class="post-nav">
+  <div>
+    {{- with .Previous}}
+      <p>{{t "frontend.prev_post"}}<br>
+      <a class="pagination-links" href="{{$.BasePath}}/{{.Slug}}">
+        {{.Title}}
+      </a></p>
+    {{- end}}
+  </div>
+
+  <div class="post-nav-next">
+    {{- with .Next}}
+      <p>{{t "frontend.next_post"}}<br>
+      <a class="pagination-links" href="{{$.BasePath}}/{{.Slug}}">
+        {{.Title}}
+      </a></p>
+    {{- end}}
+  </div>
+</div>
+{{end}}

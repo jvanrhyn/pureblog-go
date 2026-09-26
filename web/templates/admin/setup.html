@@ -1,0 +1,44 @@
+{{define "setup"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main class="narrow">
+        <h1>{{t "setup.heading"}}</h1>
+        <br>
+        {{- if .Errors}}
+            <div class="notice">
+                <ul>
+                    {{- range .Errors}}
+                    <li>{{.}}</li>
+                    {{- end}}
+                </ul>
+            </div>
+        {{- end}}
+
+        <form method="post" action="{{.BasePath}}/setup">
+            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+            <label for="language">{{t "setup.language"}}</label>
+            <select id="language" name="language" onchange="window.location.href='?lang='+encodeURIComponent(this.value)">
+                {{- range $d.Languages}}
+                <option value="{{.Code}}"{{if eq .Code (index $d.Values "language")}} selected{{end}}>{{.Name}}</option>
+                {{- end}}
+            </select>
+
+            <label for="site_title">{{t "setup.site_title"}}</label>
+            <input type="text" id="site_title" name="site_title" value="{{index $d.Values "site_title"}}" placeholder="Sally's Blog" required>
+
+            <label for="site_tagline">{{t "setup.tagline"}}</label>
+            <input type="text" id="site_tagline" name="site_tagline" value="{{index $d.Values "site_tagline"}}" placeholder="A blog about my thoughts...">
+
+            <label for="base_url">{{t "setup.base_url"}}</label>
+            <input type="text" id="base_url" name="base_url" value="{{index $d.Values "base_url"}}" placeholder="https://example.com" required>
+
+            <label for="admin_username">{{t "setup.username"}}</label>
+            <input type="text" id="admin_username" name="admin_username" value="{{index $d.Values "admin_username"}}" required>
+
+            <label for="password">{{t "setup.password"}}</label>
+            <input type="password" id="password" name="password" required>
+
+            <label for="confirm_password">{{t "setup.confirm_password"}}</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+            <p><button type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"></use></svg> {{t "setup.submit"}}</button></p>
+        </form>
+    </main>
+{{template "admin-bottom" .}}{{end}}

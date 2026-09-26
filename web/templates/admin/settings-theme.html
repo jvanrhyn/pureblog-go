@@ -1,0 +1,228 @@
+{{define "swatches"}}
+<div class="swatch-chips">
+    <span class="swatch-chip" title="Background: {{.Bg}}" style="background: {{.Bg}}; border: 1px solid {{.Border}};"></span>
+    <span class="swatch-chip" title="Text: {{.Text}}" style="background: {{.Text}};"></span>
+    <span class="swatch-chip" title="Accent: {{.Accent}}" style="background: {{.Accent}};"></span>
+    <span class="swatch-chip" title="Border: {{.Border}}" style="background: {{.Border}};"></span>
+    <span class="swatch-chip" title="Accent BG: {{.AccentBg}}" style="background: {{.AccentBg}};"></span>
+</div>
+{{end}}
+
+{{define "font-radios"}}
+<label class="inline-radio font-preview font-preview-sans" for="{{.Name}}_sans">
+    <input type="radio" id="{{.Name}}_sans" name="{{.Name}}" value="sans" {{if eq .Value "sans"}}checked{{end}}>
+    Sans (Inter)
+</label>
+<label class="inline-radio font-preview font-preview-serif" for="{{.Name}}_serif">
+    <input type="radio" id="{{.Name}}_serif" name="{{.Name}}" value="serif" {{if eq .Value "serif"}}checked{{end}}>
+    Serif (Merriweather)
+</label>
+<label class="inline-radio font-preview font-preview-mono" for="{{.Name}}_mono">
+    <input type="radio" id="{{.Name}}_mono" name="{{.Name}}" value="mono" {{if eq .Value "mono"}}checked{{end}}>
+    Mono (Iosevka)
+</label>
+{{end}}
+
+{{define "mode-radios"}}
+<label class="inline-radio" for="{{.Name}}_light">
+    <input type="radio" id="{{.Name}}_light" name="{{.Name}}" value="light" {{if eq .Value "light"}}checked{{end}}>
+    {{t "admin.settings.theme.color_light"}}
+</label>
+<label class="inline-radio" for="{{.Name}}_dark">
+    <input type="radio" id="{{.Name}}_dark" name="{{.Name}}" value="dark" {{if eq .Value "dark"}}checked{{end}}>
+    {{t "admin.settings.theme.color_dark"}}
+</label>
+<label class="inline-radio" for="{{.Name}}_auto">
+    <input type="radio" id="{{.Name}}_auto" name="{{.Name}}" value="auto" {{if eq .Value "auto"}}checked{{end}}>
+    {{t "admin.settings.theme.color_auto"}}
+</label>
+{{end}}
+
+{{define "layout-choice"}}
+<label class="layout-choice" for="post_list_{{.Value}}">
+    <input type="radio" id="post_list_{{.Value}}" name="post_list_layout" value="{{.Value}}" {{if eq .Value .Current}}checked{{end}}>
+    <picture class="layout-preview">
+        <source srcset="{{.BasePath}}/admin/images/layouts/layout-{{.Value}}-dark.png" media="(prefers-color-scheme: dark)">
+        <img src="{{.BasePath}}/admin/images/layouts/layout-{{.Value}}-light.png" alt="{{t .Label}}" loading="lazy">
+    </picture>
+    <span>{{t .Label}}</span>
+</label>
+{{end}}
+
+{{define "color-field"}}
+<div class="color-field">
+    <label for="{{.Name}}">{{t .Label}}</label>
+    <input type="text" id="{{.Name}}" name="{{.Name}}" class="color-input" placeholder="{{.Placeholder}}">
+</div>
+{{end}}
+
+{{define "settings-theme"}}{{template "admin-top" .}}{{$d := .Data}}{{$th := .Config.Theme}}
+    <main class="mid" hx-target="main" hx-select="main" hx-swap="outerHTML">
+        <h1>{{t "admin.settings.theme.heading"}}</h1>
+        {{template "notices" .}}
+        {{template "settings-save" .}}
+
+        <form method="post" id="settings-form" action="{{.BasePath}}/admin/settings-theme" hx-boost="true">
+            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.theme.section_fonts"}}</span>
+                <label><b>{{t "admin.settings.theme.site_font"}}</b></label>
+                {{template "font-radios" (dict "Name" "font_stack" "Value" (or $th.FontStack "sans"))}}
+                <label><b>{{t "admin.settings.theme.admin_font"}}</b></label>
+                {{template "font-radios" (dict "Name" "admin_font_stack" "Value" (or $th.AdminFontStack "sans"))}}
+            </section>
+
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.theme.section_color_mode"}}</span>
+                <label><b>{{t "admin.settings.theme.site_color_mode"}}</b></label>
+                {{template "mode-radios" (dict "Name" "color_mode" "Value" (or $th.ColorMode "light"))}}
+                <label><b>{{t "admin.settings.theme.admin_color_mode"}}</b></label>
+                {{template "mode-radios" (dict "Name" "admin_color_mode" "Value" (or $th.AdminColorMode "auto"))}}
+            </section>
+
+            <section class="section-divider">
+                <span class="title">{{t "admin.settings.theme.section_post_layout"}}</span>
+                <div class="layout-options">
+                    {{- $cur := or $th.PostListLayout "excerpt"}}
+                    {{template "layout-choice" (dict "Value" "excerpt" "Current" $cur "Label" "admin.settings.theme.layout_excerpt" "BasePath" .BasePath)}}
+                    {{template "layout-choice" (dict "Value" "full" "Current" $cur "Label" "admin.settings.theme.layout_full" "BasePath" .BasePath)}}
+                    {{template "layout-choice" (dict "Value" "archive" "Current" $cur "Label" "admin.settings.theme.layout_archive" "BasePath" .BasePath)}}
+                </div>
+            </section>
+        </form>
+
+        <section class="section-divider">
+            <span class="title">{{t "admin.settings.theme.section_themes"}}</span>
+            <p>{{tHTML "admin.settings.theme.themes_intro" "link" $d.DocsLink}}</p>
+
+            <form method="post" id="theme-action-form" action="{{.BasePath}}/admin/settings-theme" hx-boost="true">
+                <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                <div class="theme-grid">
+                    {{- range $d.Themes}}
+                        <div class="theme-card{{if .Active}} active{{end}}">
+                            <div class="theme-card-header">
+                                <span class="theme-card-title">{{.Name}}</span>
+                                {{- if .Active}}
+                                    <span class="theme-badge active-badge">{{t "admin.settings.theme.active"}}</span>
+                                {{- else if .IsCustom}}
+                                    <span class="theme-badge custom-badge">{{t "admin.settings.theme.custom"}}</span>
+                                {{- end}}
+                            </div>
+
+                            <div class="theme-swatch-group">
+                                {{- if or .HasLight (not .HasDark)}}
+                                    <div class="theme-swatch-row">
+                                        <span class="swatch-label">{{t "admin.settings.theme.light_mode"}}</span>
+                                        {{template "swatches" .Light}}
+                                    </div>
+                                {{- end}}
+                                {{- if or .HasDark (not .HasLight)}}
+                                    <div class="theme-swatch-row">
+                                        <span class="swatch-label">{{t "admin.settings.theme.dark_mode"}}</span>
+                                        {{template "swatches" .Dark}}
+                                    </div>
+                                {{- end}}
+                            </div>
+
+                            <div class="theme-card-actions">
+                                {{- if not .Active}}
+                                    <button type="submit" name="apply_theme_id" value="{{.ID}}" class="link-button apply">
+                                        {{t "admin.settings.theme.apply"}}
+                                    </button>
+                                {{- end}}
+                                <a href="{{$.BasePath}}/?theme_preview={{urlquery .ID}}" class="link-button preview" target="_blank" rel="noopener noreferrer" hx-boost="false">
+                                    {{t "admin.settings.theme.preview"}}
+                                </a>
+                                {{- if .IsCustom}}
+                                    <button type="submit" name="delete_theme_filename" value="{{.Filename}}" class="link-button delete" onclick="return confirm({{t "admin.settings.theme.delete_confirm"}});">
+                                        <svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg>
+                                        {{t "admin.editor.delete"}}
+                                    </button>
+                                {{- end}}
+                            </div>
+                        </div>
+                    {{- end}}
+                </div>
+            </form>
+        </section>
+
+        <details class="theme-creator-details">
+            <summary class="theme-creator-summary"><b>{{t "admin.settings.theme.creator_title"}}</b></summary>
+            <div class="theme-creator-body">
+                <p class="tip">{{t "admin.settings.theme.creator_tip"}}</p>
+                <form method="post" class="theme-creator-form" action="{{.BasePath}}/admin/settings-theme" hx-boost="true">
+                    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                    <input type="hidden" name="action" value="create_theme">
+
+                    <label for="new_theme_name"><b>{{t "admin.settings.theme.theme_name"}}</b></label>
+                    <input type="text" id="new_theme_name" name="new_theme_name" placeholder="e.g. Sunset" required>
+
+                    <h3>{{t "admin.settings.theme.light_mode"}}</h3>
+                    <div class="color-grid">
+                        {{template "color-field" (dict "Name" "new_bg" "Label" "admin.settings.theme.color_background" "Placeholder" "#FAFAFA")}}
+                        {{template "color-field" (dict "Name" "new_text" "Label" "admin.settings.theme.color_text" "Placeholder" "#212121")}}
+                        {{template "color-field" (dict "Name" "new_accent" "Label" "admin.settings.theme.color_accent" "Placeholder" "#0D47A1")}}
+                        {{template "color-field" (dict "Name" "new_border" "Label" "admin.settings.theme.color_border" "Placeholder" "#898EA4")}}
+                        {{template "color-field" (dict "Name" "new_accent_bg" "Label" "admin.settings.theme.color_accent_bg" "Placeholder" "#F5F7FF")}}
+                    </div>
+
+                    <h3>{{t "admin.settings.theme.dark_mode"}}</h3>
+                    <div class="color-grid">
+                        {{template "color-field" (dict "Name" "new_bg_dark" "Label" "admin.settings.theme.color_background" "Placeholder" "#212121")}}
+                        {{template "color-field" (dict "Name" "new_text_dark" "Label" "admin.settings.theme.color_text" "Placeholder" "#DCDCDC")}}
+                        {{template "color-field" (dict "Name" "new_accent_dark" "Label" "admin.settings.theme.color_accent" "Placeholder" "#FFB300")}}
+                        {{template "color-field" (dict "Name" "new_border_dark" "Label" "admin.settings.theme.color_border" "Placeholder" "#555555")}}
+                        {{template "color-field" (dict "Name" "new_accent_bg_dark" "Label" "admin.settings.theme.color_accent_bg" "Placeholder" "#2B2B2B")}}
+                    </div>
+
+                    <div style="margin-top: 1rem;">
+                        <button type="submit" class="save">
+                            <svg class="icon" aria-hidden="true"><use href="#icon-save"></use></svg>
+                            {{t "admin.settings.theme.save_theme"}}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </details>
+
+        <section class="section-divider">
+            <span class="title">{{t "admin.settings.theme.section_import"}}</span>
+            <form method="post" enctype="multipart/form-data" class="theme-import-form" action="{{.BasePath}}/admin/settings-theme" hx-boost="true">
+                <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                <input type="hidden" name="action" value="import_theme">
+                <label for="theme_file">{{t "admin.settings.theme.import_file_label"}} <span class="tip">({{t "admin.settings.theme.import_file_tip"}})</span></label>
+                <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem;">
+                    <input type="file" id="theme_file" name="theme_file" accept=".json,application/json" required style="margin-bottom: 0;">
+                    <button type="submit" class="save" style="margin: 0; white-space: nowrap;">
+                        {{t "admin.settings.theme.import_button"}}
+                    </button>
+                </div>
+            </form>
+        </section>
+        <script>
+        document.querySelectorAll('.color-input').forEach(function (input) {
+            function updateColor() {
+                var val = input.value.trim();
+                if (val !== '' && !val.startsWith('#')) val = '#' + val;
+                var hex = val.replace(/^#/, '');
+                if (/^([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex)) {
+                    if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+                    var r = parseInt(hex.substring(0, 2), 16);
+                    var g = parseInt(hex.substring(2, 4), 16);
+                    var b = parseInt(hex.substring(4, 6), 16);
+                    var yiq = (r * 299 + g * 587 + b * 114) / 1000;
+                    input.style.backgroundColor = '#' + hex;
+                    input.style.color = yiq >= 128 ? '#000000' : '#ffffff';
+                } else {
+                    input.style.backgroundColor = '';
+                    input.style.color = '';
+                }
+            }
+            input.addEventListener('input', updateColor);
+            input.addEventListener('change', updateColor);
+            if (input.value) updateColor();
+        });
+        </script>
+    </main>
+{{template "admin-bottom" .}}{{end}}

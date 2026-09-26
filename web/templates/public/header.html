@@ -1,0 +1,70 @@
+{{define "header"}}<!DOCTYPE html>
+<html lang="{{.Lang}}" data-theme="{{.ColorMode}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="PureBlog-Go">
+    <title>{{.FullTitle}}</title>
+    {{- if .MetaDescription}}
+    <meta name="description" content="{{.MetaDescription}}">
+    {{- end}}
+    <link rel="canonical" href="{{.CanonicalURL}}">
+    {{- if .Favicon}}
+    <link rel="icon" href="{{.Favicon}}">
+    {{- end}}
+    {{- if .AppleTouchIcon}}
+    <link rel="apple-touch-icon" href="{{.AppleTouchIcon}}">
+    {{- end}}
+    <meta property="og:type" content="{{.OGType}}">
+    <meta property="og:url" content="{{.CanonicalURL}}">
+    <meta property="og:site_name" content="{{.SiteTitle}}">
+    <meta property="og:title" content="{{.FullTitle}}">
+    {{- if .MetaDescription}}
+    <meta property="og:description" content="{{.MetaDescription}}">
+    {{- end}}
+    <meta property="og:locale" content="{{.OGLocale}}">
+    {{- if .OGImage}}
+    <meta property="og:image" content="{{.OGImage}}">
+    {{- end}}
+    <link rel="alternate" type="application/rss+xml" title="{{.SiteTitle}} RSS" href="{{.BaseURL}}/feed">
+    <style>
+        body { background: {{.Light.Bg}}; }
+    </style>
+    <link rel="stylesheet" href="{{.BaseURL}}/assets/css/style.css?v={{.CSSVersion}}">
+    <style>
+        :root {
+            --bg-light: {{.Light.Bg}};
+            --text-light: {{.Light.Text}};
+            --accent-light: {{.Light.Accent}};
+            --border-light: {{.Light.Border}};
+            --accent-bg-light: {{.Light.AccentBg}};
+            --bg-dark: {{.Dark.Bg}};
+            --text-dark: {{.Dark.Text}};
+            --accent-dark: {{.Dark.Accent}};
+            --border-dark: {{.Dark.Border}};
+            --accent-bg-dark: {{.Dark.AccentBg}};
+            --font-stack: {{.FontStack}};
+            --mono-font-stack: {{.MonoFontStack}};
+        }
+{{.CustomCSS}}
+    </style>
+    {{- if .UseHTMX}}
+    <script src="{{.BasePath}}/assets/htmx.min.js" defer></script>
+    {{- end}}
+{{.HeadInject}}
+</head>
+<body>
+    {{.Sprite}}
+    {{- with .ThemePreview}}
+    <aside class="theme-preview-banner" style="position: sticky; top: 0; z-index: 9999; background: var(--bg-color); color: var(--text-color); border-bottom: 2px solid var(--border-color); padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-size: 0.85rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <span>{{t "admin.settings.theme.previewing"}}: <strong>{{.Name}}</strong> ({{t "admin.settings.theme.preview_admin_only"}})</span>
+        <form method="post" action="{{$.BasePath}}/admin/settings-theme" style="margin: 0; display: inline;">
+            <input type="hidden" name="apply_theme_id" value="{{.ID}}">
+            <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
+            <button type="submit" class="save" style="cursor: pointer; background: var(--bg-color); color: var(--green, #2e7d32); border: 2px solid var(--green, #2e7d32); text-transform: uppercase; font-weight: bold; padding: 0.35rem 0.65rem; font-size: 0.75rem; font-family: inherit; line-height: 1.15; border-radius: 0;">
+                {{t "admin.settings.theme.apply"}}
+            </button>
+        </form>
+    </aside>
+    {{- end}}
+{{end}}

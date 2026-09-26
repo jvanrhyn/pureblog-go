@@ -1,0 +1,422 @@
+{{define "admin-top"}}<!DOCTYPE html>
+<html lang="{{.Lang}}" data-admin-theme="{{.ColorMode}}" data-admin-font="{{.AdminFont}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{.BaseURL}}/assets/images/favicon.png">
+    <link rel="apple-touch-icon" href="{{.BaseURL}}/assets/images/favicon.png">
+    <title>{{.Title}}</title>
+    {{- if .CodeEditor}}
+    <link rel="stylesheet" href="https://unpkg.com/prismjs@1.29.0/themes/prism.min.css">
+    {{- end}}
+    <link rel="stylesheet" href="{{.BaseURL}}/admin/css/admin.css?v={{.CSSVersion}}">
+    <script>try{if(localStorage.getItem('pb-sidebar')==='collapsed')document.documentElement.setAttribute('data-sidebar','collapsed');}catch(e){}</script>
+    <script src="{{.BasePath}}/admin/js/htmx.min.js"></script>
+    <style>
+        :root {
+            --font-stack: {{.FontStack}};
+        }
+{{.CustomCSS}}
+    </style>
+    {{- if .CodeEditor}}
+        <script src="https://unpkg.com/prismjs@1.29.0/prism.js"></script>
+        {{- if eq .CodeEditor "markdown"}}
+        <script src="https://unpkg.com/prismjs@1.29.0/components/prism-markdown.min.js"></script>
+        {{- end}}
+        <script type="module">
+            import { CodeJar } from 'https://unpkg.com/codejar@3.7.0/codejar.js';
+            window.CodeJar = (editor, highlight, opt) => {
+                const jar = CodeJar(editor, highlight, opt);
+
+                const insertTextAtCursor = (text) => {
+                    const selection = window.getSelection();
+                    if (!selection.rangeCount) return;
+                    const range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    const textNode = document.createTextNode(text);
+                    range.insertNode(textNode);
+                    range.setStartAfter(textNode);
+                    range.setEndAfter(textNode);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                };
+
+                // Paste as plain text, preserving tabs and newlines.
+                editor.addEventListener('paste', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const text = (event.originalEvent || event).clipboardData.getData('text/plain').replace(/\r/g, '');
+                    jar.recordHistory();
+                    const pos = jar.save();
+                    insertTextAtCursor(text);
+                    highlight(editor);
+                    const start = Math.min(pos.start, pos.end) + text.length;
+                    jar.restore({ start, end: start, dir: '<-' });
+                    jar.recordHistory();
+                    editor.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+                }, true);
+
+                // Tab inserts a tab character.
+                editor.addEventListener('keydown', (event) => {
+                    if (event.key === 'Tab' && !event.shiftKey) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        jar.recordHistory();
+                        document.execCommand('insertText', false, '\t');
+                        jar.recordHistory();
+                        editor.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+                    }
+                }, true);
+
+                return jar;
+            };
+            window.dispatchEvent(new Event('codejar:ready'));
+        </script>
+    {{- end}}
+</head>
+<body hx-headers='{"X-CSRF-Token": "{{.CSRF}}"}'>
+    <!-- SVG sprite: add support for rendering admin icons via <use> -->
+    {{.Icons}}
+    <div class="admin-shell">
+    {{- if not .HideNav}}
+        <nav class="admin-nav" aria-label="Admin">
+            <div class="sidebar-header">
+                <a href="{{.BasePath}}/admin/{{if eq .AdminHomepage "content"}}content{{else}}dashboard{{end}}" class="sidebar-logo">
+                    {{- if .Config.Assets.SidebarLogo}}
+                        <img src="{{.Config.Assets.SidebarLogo}}" alt="{{.Config.SiteTitle}}">
+                    {{- else}}
+                        <span class="logo"><span class="pure">PURE</span><span class="service">BLOG</span></span>
+                    {{- end}}
+                </a>
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg class="icon" aria-hidden="true"><use href="#icon-panel-left-close"></use></svg>
+                    <svg class="icon" aria-hidden="true"><use href="#icon-panel-left-open"></use></svg>
+                </button>
+            </div>
+            <ul class="admin-nav-list">
+                <li>
+                    {{- if not .BlogPostsEnabled}}
+                        <a id="sidebar-new-post-button" class="save link-button" href="{{.BasePath}}/admin/edit-page?action=new" title="{{t "admin.pages.new_page"}}">
+                            <svg class="icon" aria-hidden="true"><use href="#icon-file-plus-corner"></use></svg>
+                            <span>{{t "admin.pages.new_page"}}</span>
+                        </a>
+                    {{- else if .Layouts}}
+                        <button type="button" id="sidebar-new-post-button" class="save link-button js-open-layout-picker" title="{{t "admin.dashboard.write_post"}}">
+                            <svg class="icon" aria-hidden="true"><use href="#icon-file-plus-corner"></use></svg>
+                            <span>{{t "admin.dashboard.write_post"}}</span>
+                        </button>
+                    {{- else}}
+                        <a id="sidebar-new-post-button" class="save link-button" href="{{.BasePath}}/admin/edit-post?action=new" title="{{t "admin.dashboard.write_post"}}">
+                            <svg class="icon" aria-hidden="true"><use href="#icon-file-plus-corner"></use></svg>
+                            <span>{{t "admin.dashboard.write_post"}}</span>
+                        </a>
+                    {{- end}}
+                </li>
+                {{- if eq .AdminHomepage "content"}}
+                    <li>{{template "nav-content" .}}</li>
+                    {{- if not .HideDashboard}}
+                    <li>{{template "nav-dashboard" .}}</li>
+                    {{- end}}
+                {{- else}}
+                    <li>{{template "nav-dashboard" .}}</li>
+                    <li>{{template "nav-content" .}}</li>
+                {{- end}}
+                <li>
+                    <a href="{{.BasePath}}/admin/images"{{if eq .Path "admin/images"}} class="current"{{end}} title="{{t "admin.nav.images"}}"><svg class="icon" aria-hidden="true"><use href="#icon-image"></use></svg><span>{{t "admin.nav.images"}}</span></a>
+                </li>
+                <li>
+                    <a href="{{.BasePath}}/admin/settings-site"{{if .IsSettings}} class="current"{{end}} title="{{t "admin.nav.settings"}}"><svg class="icon" aria-hidden="true"><use href="#icon-settings"></use></svg><span>{{t "admin.nav.settings"}}</span></a>
+                    {{- if .IsSettings}}
+                    <ul class="admin-nav-list sidebar-subnav">
+                        {{- range $item := settingsNav}}
+                        <li><a href="{{$.BasePath}}/{{$item.Path}}"{{if eq $.Path $item.Path}} class="current"{{end}} title="{{t $item.Label}}"><svg class="icon" aria-hidden="true"><use href="#icon-{{$item.Icon}}"></use></svg><span>{{t $item.Label}}</span></a></li>
+                        {{- end}}
+                    </ul>
+                    {{- end}}
+                </li>
+                <li><a target="_blank" rel="noopener noreferrer" href="{{.BasePath}}/" title="{{t "admin.nav.view_site"}}"><svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg><span>{{t "admin.nav.view_site"}}</span></a></li>
+                {{- if .Config.Cache.Enabled}}
+                    <li>
+                        <form method="post" action="{{.BasePath}}/admin/clear-cache" class="inline-form"
+                              hx-post="{{.BasePath}}/admin/clear-cache" hx-target="#admin-flash-slot" hx-swap="beforeend">
+                            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                            <input type="hidden" name="return" value="{{.RequestURI}}">
+                            <button class="delete link-button" type="submit" title="{{t "admin.nav.clear_cache"}}">
+                                <svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg>
+                                <span>{{t "admin.nav.clear_cache"}}</span>
+                            </button>
+                        </form>
+                    </li>
+                {{- end}}
+                <li class="logout-item">
+                    <form method="post" action="{{.BasePath}}/admin/logout" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                        <button type="submit" class="link-button delete logout-button" title="{{t "admin.nav.log_out"}}">
+                            <svg class="icon" aria-hidden="true"><use href="#icon-log-out"></use></svg>
+                            <span>{{t "admin.nav.log_out"}}</span>
+                        </button>
+                    </form>
+                </li>
+            </ul>
+            {{- if .Layouts}}
+                <dialog id="sidebar-layout-picker" aria-labelledby="sidebar-layout-picker-title">
+                    <h2 id="sidebar-layout-picker-title">{{t "admin.content.choose_layout"}}</h2>
+                    <ul class="layout-picker-list">
+                        <li><a href="{{.BasePath}}/admin/edit-post?action=new">{{t "admin.content.default_post"}}</a></li>
+                        {{- range .Layouts}}
+                        <li><a href="{{$.BasePath}}/admin/edit-post?action=new&amp;layout={{urlquery .Name}}">{{.Label}}</a></li>
+                        {{- end}}
+                    </ul>
+                    <button type="button" id="layout-picker-close" class="delete">
+                        <svg class="icon" aria-hidden="true"><use href="#icon-circle-x"></use></svg>
+                        {{t "admin.content.cancel"}}
+                    </button>
+                </dialog>
+            {{- end}}
+        </nav>
+    {{- end}}
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="admin-main">
+    {{- if not .HideNav}}
+        <div class="mobile-nav-header">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open navigation">
+                <svg class="icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
+            </button>
+        </div>
+    {{- end}}
+    <div class="admin-content">
+    <div id="admin-flash-slot"></div>
+    {{- if not .HideNav}}
+        {{- with .Flash}}
+            <p class="notice{{if not .OK}} delete{{end}}" data-auto-dismiss>{{.Message}}</p>
+        {{- end}}
+        {{- if .SearchNoticeSlug}}
+            <div class="notice" id="search-page-notice">
+                {{t "admin.settings.site.notice_search_missing" "slug" .SearchNoticeSlug}}
+                <form method="post" action="{{.BasePath}}/admin/search-page" style="display:inline"
+                      hx-post="{{.BasePath}}/admin/search-page" hx-target="#search-page-notice" hx-swap="outerHTML">
+                    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                    <input type="hidden" name="return" value="{{.RequestURI}}">
+                    <input type="hidden" name="search_page_action" value="create">
+                    <button type="submit" class="autosave-btn">{{t "admin.settings.site.create_search_page"}}</button>
+                </form>
+                <form method="post" action="{{.BasePath}}/admin/search-page" style="display:inline"
+                      hx-post="{{.BasePath}}/admin/search-page" hx-target="#search-page-notice" hx-swap="outerHTML">
+                    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                    <input type="hidden" name="return" value="{{.RequestURI}}">
+                    <input type="hidden" name="search_page_action" value="dismiss">
+                    <button type="submit" class="autosave-btn delete">{{t "admin.settings.site.dismiss_search_notice"}}</button>
+                </form>
+            </div>
+        {{- end}}
+    {{- end}}
+{{end}}
+
+{{define "nav-dashboard"}}<a href="{{.BasePath}}/admin/dashboard"{{if eq .Path "admin/dashboard"}} class="current"{{end}} title="{{t "admin.nav.dashboard"}}"><svg class="icon" aria-hidden="true"><use href="#icon-circle-gauge"></use></svg><span>{{t "admin.nav.dashboard"}}</span></a>{{end}}
+
+{{define "nav-content"}}<a href="{{.BasePath}}/admin/content"{{if eq .Path "admin/content"}} class="current"{{end}} title="{{t "admin.nav.content"}}"><svg class="icon" aria-hidden="true"><use href="#icon-file-text"></use></svg><span>{{t "admin.nav.content"}}</span></a>
+{{- if and (eq .Path "admin/content") .BlogPostsEnabled}}
+<ul class="admin-nav-list sidebar-subnav">
+    <li><a href="{{.BasePath}}/admin/content?tab=posts"{{if eq .Tab "posts"}} class="current"{{end}} title="{{t "admin.content.tab_posts"}}"><svg class="icon" aria-hidden="true"><use href="#icon-notebook-pen"></use></svg><span>{{t "admin.content.tab_posts"}}</span></a></li>
+    <li><a href="{{.BasePath}}/admin/content?tab=pages"{{if eq .Tab "pages"}} class="current"{{end}} title="{{t "admin.content.tab_pages"}}"><svg class="icon" aria-hidden="true"><use href="#icon-file-text"></use></svg><span>{{t "admin.content.tab_pages"}}</span></a></li>
+</ul>
+{{- end}}{{end}}
+
+{{define "notices"}}
+{{- if .Notice}}
+    <p class="notice" data-auto-dismiss>{{.Notice}}</p>
+{{- end}}
+{{- if .Errors}}
+    <div class="notice delete">
+        <ul>
+            {{- range .Errors}}
+            <li>{{.}}</li>
+            {{- end}}
+        </ul>
+    </div>
+{{- end}}
+{{end}}
+
+{{define "settings-save"}}
+        <nav class="admin-actions">
+            <button class="save" type="submit" form="settings-form" aria-label="{{t "admin.settings.nav.save"}}">
+                <svg class="icon" aria-hidden="true"><use href="#icon-save"></use></svg>
+                {{t "admin.settings.nav.save"}}
+            </button>
+        </nav>
+{{end}}
+
+{{define "admin-bottom"}}
+<footer>
+    <p><a href="https://pureblog.org">Pure Blog</a> {{t "admin.footer.created_by"}} <a href="https://kevquirk.com">Kev Quirk</a>.</p>
+
+    <p><a href="https://docs.pureblog.org">{{t "admin.footer.docs"}}</a> | <a href="https://fosstodon.org/@purecommons">{{t "admin.footer.mastodon"}}</a> | <a href="https://github.com/kevquirk/pureblog">{{t "admin.footer.source"}}</a></p>
+</footer>
+<script>
+    document.addEventListener('keydown', (event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+            const saveForm =
+                document.getElementById('editor-form') ||
+                document.getElementById('page-form') ||
+                document.getElementById('settings-form');
+            if (!saveForm) {
+                return;
+            }
+            event.preventDefault();
+            saveForm.requestSubmit();
+        }
+    });
+
+    // Floating toasts: every .notice (including ones swapped in by htmx)
+    // is moved into a fixed container; data-auto-dismiss notices fade out.
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'admin-toast-container';
+    document.body.appendChild(toastContainer);
+
+    function dismissToast(notice) {
+        notice.style.opacity = '0';
+        notice.style.transform = 'translateX(30px)';
+        setTimeout(() => notice.remove(), 250);
+    }
+
+    function setupToast(notice) {
+        if (!notice || notice.parentElement === toastContainer) return;
+        if (!notice.querySelector('.toast-close-btn') && !notice.classList.contains('autosave-restore-notice')) {
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'toast-close-btn';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.ariaLabel = 'Dismiss notification';
+            closeBtn.addEventListener('click', () => dismissToast(notice));
+            notice.appendChild(closeBtn);
+            notice.style.position = 'relative';
+            notice.style.paddingRight = '2.5rem';
+        }
+        toastContainer.appendChild(notice);
+        if (notice.hasAttribute('data-auto-dismiss')) {
+            setTimeout(() => dismissToast(notice), 2500);
+        }
+    }
+
+    document.querySelectorAll('.notice').forEach(setupToast);
+
+    new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType !== Node.ELEMENT_NODE) continue;
+                if (node.classList.contains('notice')) {
+                    setupToast(node);
+                } else {
+                    node.querySelectorAll('.notice').forEach(setupToast);
+                }
+            }
+        }
+    }).observe(document.body, { childList: true, subtree: true });
+
+    if (document.querySelector('[data-auto-dismiss]')) {
+        setTimeout(() => {
+            const url = new URL(window.location.href);
+            ['saved', 'deleted', 'uploaded', 'upload_error', 'updated', 'setup', 'delete_error'].forEach((param) => {
+                url.searchParams.delete(param);
+            });
+            window.history.replaceState(history.state, document.title, url.toString());
+        }, 2500);
+    }
+
+    const sidebarLayoutPicker = document.getElementById('sidebar-layout-picker');
+    const sidebarLayoutPickerClose = document.getElementById('layout-picker-close');
+    if (sidebarLayoutPicker) {
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.js-open-layout-picker')) sidebarLayoutPicker.showModal();
+        });
+        if (sidebarLayoutPickerClose) {
+            sidebarLayoutPickerClose.addEventListener('click', () => sidebarLayoutPicker.close());
+        }
+        sidebarLayoutPicker.addEventListener('click', (e) => { if (e.target === sidebarLayoutPicker) sidebarLayoutPicker.close(); });
+    }
+
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+    const closeMobileNav = () => document.documentElement.classList.remove('mobile-nav-open');
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            if (isMobile()) {
+                closeMobileNav();
+                return;
+            }
+            const collapsed = document.documentElement.getAttribute('data-sidebar') === 'collapsed';
+            if (collapsed) {
+                document.documentElement.removeAttribute('data-sidebar');
+                try { localStorage.setItem('pb-sidebar', 'expanded'); } catch(e) {}
+            } else {
+                document.documentElement.setAttribute('data-sidebar', 'collapsed');
+                try { localStorage.setItem('pb-sidebar', 'collapsed'); } catch(e) {}
+            }
+        });
+    }
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', () => document.documentElement.classList.add('mobile-nav-open'));
+    }
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeMobileNav);
+    }
+
+    // Special page badge popovers (delegated so they survive htmx swaps).
+    function closeAllBadgePopovers() {
+        document.querySelectorAll('.page-badge-wrapper').forEach(wrapper => {
+            wrapper.querySelector('button.page-badge')?.setAttribute('aria-expanded', 'false');
+            const popover = wrapper.querySelector('.page-badge-popover');
+            if (popover) popover.hidden = true;
+        });
+    }
+    document.addEventListener('click', (e) => {
+        const closeBtn = e.target.closest('.page-badge-popover-close');
+        if (closeBtn) {
+            closeAllBadgePopovers();
+            closeBtn.closest('.page-badge-wrapper')?.querySelector('button.page-badge')?.focus();
+            return;
+        }
+        if (e.target.closest('.page-badge-popover')) return;
+        const btn = e.target.closest('button.page-badge');
+        if (btn) {
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            closeAllBadgePopovers();
+            if (!expanded) {
+                btn.setAttribute('aria-expanded', 'true');
+                const popover = btn.closest('.page-badge-wrapper')?.querySelector('.page-badge-popover');
+                if (popover) popover.hidden = false;
+            }
+            return;
+        }
+        closeAllBadgePopovers();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllBadgePopovers(); });
+
+    // Copy-to-clipboard buttons for image Markdown (delegated).
+    document.addEventListener('click', async (e) => {
+        const button = e.target.closest('.copy-markdown');
+        if (!button) return;
+        const markdown = button.getAttribute('data-markdown') || '';
+        if (markdown === '') return;
+        const copied = button.dataset.copied || 'Copied!';
+        const copy = button.dataset.copy || 'Copy';
+        try {
+            await navigator.clipboard.writeText(markdown);
+            button.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"></use></svg> ' + copied;
+            setTimeout(() => {
+                button.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#icon-copy"></use></svg> ' + copy;
+            }, 1500);
+        } catch (err) {
+            alert(button.dataset.copyFailed || 'Copy failed');
+        }
+    });
+</script>
+    </div><!-- /.admin-content -->
+    </div><!-- /.admin-main -->
+    </div><!-- /.admin-shell -->
+</body>
+</html>
+{{end}}

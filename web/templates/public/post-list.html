@@ -1,0 +1,55 @@
+{{/* Expects a PostList as .List and the page as .Page (via dict). */}}
+{{define "post-list"}}{{$page := .Page}}{{$list := .List}}
+{{- if not $list.Posts}}
+    <p>{{t "frontend.no_posts"}}</p>
+{{- else if eq $list.Layout "archive"}}
+    <!-- Archive view -->
+    <div class="archive-list">
+        {{- range $list.Posts}}
+            <time datetime="{{isoDate .Date}}">{{date .Date}}</time>
+            <a href="{{$page.BasePath}}/{{.Slug}}">{{.Title}}</a>
+        {{- end}}
+    </div>
+{{- else}}
+    {{- range $list.Posts}}
+        <article class="post-item">
+            {{- if eq $list.Layout "excerpt"}}
+            <!-- Excerpt view -->
+                <div class="excerpt-view">
+                    <h2><a href="{{$page.BasePath}}/{{.Slug}}">{{.Title}}</a></h2>
+                    {{- if .Date}}
+                        <p><svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg> <time datetime="{{isoDate .Date}}">{{date .Date}}</time></p>
+                    {{- end}}
+                    <p class="post-excerpt">{{excerpt .}}</p>
+                    {{- if .Tags}}
+                        <p class="tag-list"><svg class="icon" aria-hidden="true"><use href="#icon-tag"></use></svg> {{tagLinks .Tags}}</p>
+                    {{- end}}
+                </div>
+            {{- else if eq $list.Layout "full"}}
+            <!-- Full post view -->
+                <div class="full-post-view">
+                    <h2><a href="{{$page.BasePath}}/{{.Slug}}">{{.Title}}</a></h2>
+                    {{- if .Date}}
+                        <p class="post-date"><svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg> <time datetime="{{isoDate .Date}}">{{date .Date}}</time></p>
+                    {{- end}}
+                    {{markdownPost .}}
+                    {{- if .Tags}}
+                        <p class="tag-list"><svg class="icon" aria-hidden="true"><use href="#icon-tag"></use></svg> {{tagLinks .Tags}}</p>
+                    {{- end}}
+                    <hr>
+                </div>
+            {{- end}}
+        </article>
+    {{- end}}
+{{- end}}
+{{- if and $list.Posts (gt $list.TotalPages 1)}}
+    <nav class="pagination">
+        {{- if $list.PrevURL}}
+            <a href="{{$list.PrevURL}}">{{t "frontend.pagination_newer"}}</a>
+        {{- end}}
+        {{- if $list.NextURL}}
+            <a href="{{$list.NextURL}}">{{t "frontend.pagination_older"}}</a>
+        {{- end}}
+    </nav>
+{{- end}}
+{{end}}

@@ -1,0 +1,115 @@
+{{define "chart"}}
+<div class="dashboard-chart{{if .Full}} dashboard-chart-full{{end}}" aria-label="{{.Label}}">
+    {{- range .Cols}}
+        {{- if and .URL (gt .Count 0)}}
+        <a class="dashboard-chart-col" href="{{.URL}}">
+        {{- else}}
+        <div class="dashboard-chart-col">
+        {{- end}}
+            <span class="dashboard-chart-count">{{if gt .Count 0}}{{.Count}}{{end}}</span>
+            <div class="dashboard-chart-bar" style="height: {{.Bar}}px"></div>
+            <span class="dashboard-chart-label">{{.Label}}</span>
+        {{- if and .URL (gt .Count 0)}}
+        </a>
+        {{- else}}
+        </div>
+        {{- end}}
+    {{- end}}
+</div>
+{{end}}
+
+{{define "tag-links"}}{{$bp := .BasePath}}{{$since := .Since}}
+{{- if .Tags}}{{range $i, $tag := .Tags}}{{if $i}}, {{end}}<a href="{{$bp}}/admin/content?tab=posts&tag={{urlquery $tag.Slug}}{{if $since}}&since={{$since}}{{end}}"><strong>{{$tag.Name}}</strong></a> ({{$tag.Count}}){{end}}
+{{- else}}{{t "admin.dashboard.stat_no_tags"}}{{end}}
+{{- end}}
+
+{{define "dashboard"}}{{template "admin-top" .}}{{$d := .Data}}
+    <main class="mid">
+        <h1>{{t "admin.nav.dashboard"}}</h1>
+
+        <!-- Top row: snapshot -->
+        <div class="dashboard-stats-3">
+            <div class="dashboard-stat-card dashboard-version-card">
+                <p class="dashboard-stat-label">{{t "admin.dashboard.version_label"}}</p>
+                <p class="dashboard-stat-value">{{$d.CurrentVersion}}</p>
+                {{- if $d.UpdateAvailable}}
+                    <a class="dashboard-version-update" href="{{.BasePath}}/admin/settings-updates">{{t "admin.dashboard.version_update_link" "latest" $d.LatestVersion}}</a>
+                {{- else if $d.LatestVersion}}
+                    <p class="dashboard-version-uptodate">{{t "admin.dashboard.version_uptodate"}}</p>
+                {{- end}}
+            </div>
+            <div class="dashboard-stat-card dashboard-stat-card-metric">
+                <p class="dashboard-stat-label">{{t "admin.dashboard.last_published"}}</p>
+                <p class="dashboard-stat-value">{{$d.LastPublishedAgo}}</p>
+            </div>
+            <div class="dashboard-stat-card dashboard-stat-card-metric">
+                <p class="dashboard-stat-label">{{t "admin.dashboard.stat_published"}}</p>
+                <p class="dashboard-stat-value">{{number $d.PublishedCount}}</p>
+            </div>
+        </div>
+
+        <!-- This year -->
+        <h2 class="dashboard-h2">{{t "admin.dashboard.section_this_year" "year" $d.CurrentYear}}</h2>
+        {{- if gt $d.RecentTotal 0}}
+        {{template "chart" (dict "Full" true "Label" (t "admin.dashboard.chart_title") "Cols" $d.Recent)}}
+        {{- end}}
+
+        <div class="dashboard-stats-3">
+            <div class="dashboard-stat-card dashboard-stat-card-metric">
+                <p class="dashboard-stat-label">{{t "admin.dashboard.stat_this_year"}}</p>
+                <p class="dashboard-stat-value">{{$d.RecentCount}}</p>
+            </div>
+            <div class="dashboard-stat-card dashboard-stat-card-metric">
+                <p class="dashboard-stat-label">{{t "admin.dashboard.stat_words_this_year"}}</p>
+                <p class="dashboard-stat-value">{{number $d.RecentWords}}{{if gt $d.RecentBooks 0.0}}<br><span class="dashboard-stat-books">({{number1 $d.RecentBooks}} {{t "admin.dashboard.stat_books"}})</span>{{end}}</p>
+            </div>
+            <div class="dashboard-stat-card dashboard-stat-card-tags">
+                <p class="dashboard-stat-label">{{t "admin.dashboard.stat_top_tags"}}</p>
+                <p class="dashboard-stat-value dashboard-stat-tags">{{template "tag-links" (dict "BasePath" .BasePath "Tags" $d.RecentTopTags "Since" $d.RecentCutoff)}}</p>
+            </div>
+        </div>
+
+        <!-- All time -->
+        <h2 class="dashboard-h2">{{t "admin.dashboard.section_all_time"}}</h2>
+        {{- if $d.Years}}
+        {{template "chart" (dict "Full" true "Label" (t "admin.dashboard.chart_all_years") "Cols" $d.Years)}}
+        {{- end}}
+
+        <div class="dashboard-stats-3">
+            <div class="dashboard-stat-card dashboard-stat-card-metric">
+                <p class="dashboard-stat-label">{{t "admin.dashboard.stat_total_words"}}</p>
+                <p class="dashboard-stat-value">{{number $d.TotalWords}}</p>
+            </div>
+            <div class="dashboard-stat-card dashboard-stat-card-metric">
+                <p class="dashboard-stat-label">{{t "admin.dashboard.stat_books"}}</p>
+                <p class="dashboard-stat-value">{{number1 $d.Books}}</p>
+            </div>
+            <div class="dashboard-stat-card dashboard-stat-card-metric">
+                <p class="dashboard-stat-label">{{t "admin.dashboard.stat_avg_words"}}</p>
+                <p class="dashboard-stat-value">{{number $d.AvgWords}}</p>
+            </div>
+        </div>
+
+        <div class="dashboard-chart-pair">
+            <div class="dashboard-chart-section">
+                <h3 class="dashboard-h3">{{t "admin.dashboard.chart_all_months"}}</h3>
+                {{template "chart" (dict "Full" false "Label" (t "admin.dashboard.chart_all_months") "Cols" $d.Months)}}
+            </div>
+            <div class="dashboard-chart-section">
+                <h3 class="dashboard-h3">{{t "admin.dashboard.chart_all_days"}}</h3>
+                {{template "chart" (dict "Full" false "Label" (t "admin.dashboard.chart_all_days") "Cols" $d.Days)}}
+            </div>
+        </div>
+
+        {{- if $d.AllTags}}
+        <div class="dashboard-all-tags">
+            <h2 class="dashboard-h2">{{t "admin.dashboard.all_tags"}}</h2>
+            <ul class="dashboard-all-tags-list">
+                {{- range $d.AllTags}}
+                <li><a href="{{$.BasePath}}/admin/content?tab=posts&tag={{urlquery .Slug}}">{{.Name}}</a> <span class="dashboard-tag-count">({{.Count}})</span></li>
+                {{- end}}
+            </ul>
+        </div>
+        {{- end}}
+    </main>
+{{template "admin-bottom" .}}{{end}}
