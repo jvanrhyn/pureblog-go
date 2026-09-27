@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/config"
+	"github.com/jvanrhyn/pureblog-go/internal/config"
 )
 
 // StorageLayout is the date format written to front matter.

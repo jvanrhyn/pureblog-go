@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/config"
-	"github.com/johanvanrhyn/pureblog-go/internal/i18n"
-	"github.com/johanvanrhyn/pureblog-go/internal/markdown"
+	"github.com/jvanrhyn/pureblog-go/internal/config"
+	"github.com/jvanrhyn/pureblog-go/internal/i18n"
+	"github.com/jvanrhyn/pureblog-go/internal/markdown"
 )
 
 // Site is a PureBlog-Go installation rooted at Dir.

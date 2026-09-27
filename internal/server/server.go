@@ -18,10 +18,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/auth"
-	"github.com/johanvanrhyn/pureblog-go/internal/blog"
-	"github.com/johanvanrhyn/pureblog-go/internal/config"
-	"github.com/johanvanrhyn/pureblog-go/internal/i18n"
+	"github.com/jvanrhyn/pureblog-go/internal/auth"
+	"github.com/jvanrhyn/pureblog-go/internal/blog"
+	"github.com/jvanrhyn/pureblog-go/internal/config"
+	"github.com/jvanrhyn/pureblog-go/internal/i18n"
 )
 
 // Options configure the server.

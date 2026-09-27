@@ -15,7 +15,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/phparray"
+	"github.com/jvanrhyn/pureblog-go/internal/phparray"
 )
 
 // productName matches the upstream name as it appears in translations,

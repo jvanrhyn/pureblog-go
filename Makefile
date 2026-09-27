@@ -4,7 +4,7 @@ LDFLAGS := -s -w -X main.version=$(VERSION)
 .PHONY: build run test lang release
 
 build:
-	go build -ldflags "$(LDFLAGS)" -o pureblog-go ./cmd/pureblog-go
+	go build -ldflags "$(LDFLAGS)" -o pureblog-go .
 
 run: build
 	mkdir -p site && ./pureblog-go -dir site -addr :8080
@@ -19,8 +19,8 @@ lang:
 
 release:
 	mkdir -p dist
-	GOOS=linux   GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/pureblog-go-linux-amd64 ./cmd/pureblog-go
-	GOOS=linux   GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/pureblog-go-linux-arm64 ./cmd/pureblog-go
-	GOOS=darwin  GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/pureblog-go-darwin-amd64 ./cmd/pureblog-go
-	GOOS=darwin  GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/pureblog-go-darwin-arm64 ./cmd/pureblog-go
-	GOOS=windows GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/pureblog-go-windows-amd64.exe ./cmd/pureblog-go
+	GOOS=linux   GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/pureblog-go-linux-amd64 .
+	GOOS=linux   GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/pureblog-go-linux-arm64 .
+	GOOS=darwin  GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/pureblog-go-darwin-amd64 .
+	GOOS=darwin  GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/pureblog-go-darwin-arm64 .
+	GOOS=windows GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/pureblog-go-windows-amd64.exe .

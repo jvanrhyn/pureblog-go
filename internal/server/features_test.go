@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/auth"
-	"github.com/johanvanrhyn/pureblog-go/internal/blog"
+	"github.com/jvanrhyn/pureblog-go/internal/auth"
+	"github.com/jvanrhyn/pureblog-go/internal/blog"
 )
 
 func writeFile(t *testing.T, path, content string) {

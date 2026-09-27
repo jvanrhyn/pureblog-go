@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/phparray"
+	"github.com/jvanrhyn/pureblog-go/internal/phparray"
 )
 
 type Theme struct {

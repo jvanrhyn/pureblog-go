@@ -1,4 +1,4 @@
-module github.com/johanvanrhyn/pureblog-go
+module github.com/jvanrhyn/pureblog-go
 
 go 1.27.1
 

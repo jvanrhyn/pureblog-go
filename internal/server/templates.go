@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/blog"
-	"github.com/johanvanrhyn/pureblog-go/internal/i18n"
+	"github.com/jvanrhyn/pureblog-go/internal/blog"
+	"github.com/jvanrhyn/pureblog-go/internal/i18n"
 )
 
 // baseFuncs are shared by public and admin templates.

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/config"
+	"github.com/jvanrhyn/pureblog-go/internal/config"
 )
 
 // Palette is one colour scheme of a theme.

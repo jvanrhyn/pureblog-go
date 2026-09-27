@@ -17,9 +17,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/auth"
-	"github.com/johanvanrhyn/pureblog-go/internal/blog"
-	"github.com/johanvanrhyn/pureblog-go/web"
+	"github.com/jvanrhyn/pureblog-go/internal/auth"
+	"github.com/jvanrhyn/pureblog-go/internal/blog"
+	"github.com/jvanrhyn/pureblog-go/web"
 )
 
 type testClient struct {

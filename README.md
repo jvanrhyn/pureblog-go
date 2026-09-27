@@ -113,7 +113,7 @@ make lang   # regenerate web/lang/*.json from ../pureblog/lang/*.php
 Layout:
 
 ```
-cmd/pureblog-go      entry point
+main.go             entry point (flags, startup)
 internal/blog       content model, front matter, indexes, themes, cache, date parsing
 internal/markdown   goldmark with Pure Blog's Markdown extensions
 internal/server     HTTP handlers, templates, htmx endpoints

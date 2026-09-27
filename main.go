@@ -19,9 +19,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/blog"
-	"github.com/johanvanrhyn/pureblog-go/internal/server"
-	"github.com/johanvanrhyn/pureblog-go/web"
+	"github.com/jvanrhyn/pureblog-go/internal/blog"
+	"github.com/jvanrhyn/pureblog-go/internal/server"
+	"github.com/jvanrhyn/pureblog-go/web"
 )
 
 // version is set at build time with -ldflags "-X main.version=v1.2.3".

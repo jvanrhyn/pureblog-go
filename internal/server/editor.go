@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/johanvanrhyn/pureblog-go/internal/auth"
-	"github.com/johanvanrhyn/pureblog-go/internal/blog"
+	"github.com/jvanrhyn/pureblog-go/internal/auth"
+	"github.com/jvanrhyn/pureblog-go/internal/blog"
 )
 
 // ImageItem is an image attached to a post or page.
