@@ -311,7 +311,7 @@
         "error_purecomments_url_invalid": "Pure Comments URL must be a valid URL.",
         "error_save": "Instellingen opslaan is mislukt.",
         "error_search_page": "De zoekpagina moet verwijzen naar een bestaande pagina.",
-        "error_timezone": "Tijdzone moet een geldige PHP-tijdzonecode zijn (bijv. UTC, Europe/Amsterdam).",
+        "error_timezone": "Tijdzone moet een geldige IANA-tijdzonecode zijn (bijv. UTC, Europe/Amsterdam).",
         "error_title": "Titel van de site is vereist.",
         "favicon": "Favicon",
         "footer_inject_page_label": "Pagina voettekst-HTML",
@@ -348,7 +348,7 @@
         "tagline": "Site Ondertitel (optioneel)",
         "timezone": "Tijdzone",
         "tip_apple_touch_icon": "Must be square and PNG format, recommended 360x360px",
-        "tip_date_format_link": "PHP-datumformaat documentatie",
+        "tip_date_format_link": "Go-datumformaat documentatie",
         "tip_favicon": "512px vierkant werkt het best",
         "tip_language_link": "taalcode",
         "tip_og_image": "aanbevolen 1360x712px voor rechthoek, of 1200x1200px voor vierkant",
@@ -358,7 +358,7 @@
         "tip_optional": "optioneel",
         "tip_rss_ttl": "seconden, 0 om uit te schakelen",
         "tip_sidebar_logo": "124x34px works best",
-        "tip_timezone_link": "PHP-tijdzoneslijst"
+        "tip_timezone_link": "IANA-tijdzoneslijst"
       },
       "theme": {
         "active": "Active",

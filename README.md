@@ -44,11 +44,13 @@ Open `http://localhost:8080/setup` to create the admin account. A new site gets 
 
 Run it behind Caddy or nginx for TLS. When serving from a sub-path, set the base URL in *Settings → Site* (for example `https://example.com/blog`). With Docker, `docker build -t pureblog-go . && docker run -v $PWD/site:/site -p 8080:8080 pureblog-go`.
 
+Dates use Go's [time layouts](https://pkg.go.dev/time#pkg-constants): you write the date format in *Settings → Site* as the reference time `Mon Jan 2 15:04:05 MST 2006`, for example `January 2, 2006`, `2 Jan 2006` or `2006-01-02 15:04`. Time zones are IANA names such as `UTC` or `Europe/London`.
+
 ## Moving from the PHP version
 
 Point `-dir` at your existing Pure Blog folder, or copy its `content/`, `config/` and `data/` folders into a new one:
 
-1. On first start, `config/config.php` is converted to `config/config.json`. Your password, 2FA secret and backup codes keep working because PHP's bcrypt hashes are compatible. The PHP file is left untouched.
+1. On first start, `config/config.php` is converted to `config/config.json`. The PHP date format (such as `F j, Y`) becomes the matching Go layout (`January 2, 2006`). PHP codes with no Go equivalent, such as the `S` ordinal suffix, are dropped, and the conversion is logged at startup. Your password, 2FA secret and backup codes keep working because PHP's bcrypt hashes are compatible. The PHP file is left untouched.
 2. `content/posts`, `content/pages`, `content/images`, `content/css`, `content/themes` and `data/*.yml` are read as they are, and front matter is written in the same format.
 3. Remember-me logins survive, because the cookie names and `data/remember-me.json` are unchanged.
 4. Public URLs are unchanged: `/slug`, `/tag/x`, `/feed`, `/sitemap.xml` and `/og-image.php?...`. Admin URLs lose the `.php` suffix (`/admin/content`), but the old `.php` URLs still work.
@@ -87,7 +89,7 @@ To override one, create `content/includes/footer.html`:
 {{end}}
 ```
 
-Changes are picked up without a restart. Templates receive a `PublicPage` (see `internal/server/public.go`) with fields such as `.Config`, `.Post`, `.Page`, `.Content`, `.BasePath`, `.Previous` and `.Next`. Available functions include `t`, `date`, `dateFmt`, `isoDate`, `markdown`, `excerpt`, `tagLinks`, `field`, `postMeta`, `footer` and `dict`.
+Changes are picked up without a restart. Templates receive a `PublicPage` (see `internal/server/public.go`) with fields such as `.Config`, `.Post`, `.Page`, `.Content`, `.BasePath`, `.Previous` and `.Next`. Available functions include `t`, `date`, `dateFmt` (takes a Go layout, as in `{{dateFmt .Post.Date "2 Jan 2006"}}`), `isoDate`, `markdown`, `excerpt`, `tagLinks`, `field`, `postMeta`, `footer` and `dict`.
 
 A custom layout (`content/layouts/photo.html`) replaces the default post body:
 
@@ -112,7 +114,7 @@ Layout:
 
 ```
 cmd/pureblog-go      entry point
-internal/blog       content model, front matter, indexes, themes, cache, PHP date formats
+internal/blog       content model, front matter, indexes, themes, cache, date parsing
 internal/markdown   goldmark with Pure Blog's Markdown extensions
 internal/server     HTTP handlers, templates, htmx endpoints
 internal/auth       sessions, CSRF, remember-me, TOTP, QR codes

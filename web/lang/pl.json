@@ -310,7 +310,7 @@
         "error_purecomments_url_invalid": "Pure Comments URL must be a valid URL.",
         "error_save": "Zapis ustawień nieudany.",
         "error_search_page": "Strona wyszukiwania musi być istniejącą stroną.",
-        "error_timezone": "Strefa czasowa musi być poprawnym identyfikatorem strefy czasowej w PHP (np. UTC, Europe/London).",
+        "error_timezone": "Strefa czasowa musi być poprawnym identyfikatorem strefy czasowej IANA (np. UTC, Europe/London).",
         "error_title": "Tytuł jest wymagany.",
         "favicon": "Favicon",
         "footer_inject_page_label": "HTML stopki strony",
@@ -347,7 +347,7 @@
         "tagline": "Slogan (opcjonalnie)",
         "timezone": "Strefa czasowa",
         "tip_apple_touch_icon": "Must be square and PNG format, recommended 360x360px",
-        "tip_date_format_link": "dokumentacja formatu daty PHP",
+        "tip_date_format_link": "dokumentacja formatu daty Go",
         "tip_favicon": "kwadrat o boku 512px sprawdza się najlepiej",
         "tip_language_link": "kod języka",
         "tip_og_image": "zalecane 1360x712px na baner, lub 1200x1200px na kwadrat",
@@ -357,7 +357,7 @@
         "tip_optional": "opcjonalnie",
         "tip_rss_ttl": "sekundy, ustaw 0, aby wyłączyć",
         "tip_sidebar_logo": "124x34px works best",
-        "tip_timezone_link": "lista stref czasowych PHP"
+        "tip_timezone_link": "lista stref czasowych IANA"
       },
       "theme": {
         "active": "Active",

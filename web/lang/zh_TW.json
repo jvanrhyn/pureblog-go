@@ -310,7 +310,7 @@
         "error_purecomments_url_invalid": "Pure Comments URL must be a valid URL.",
         "error_save": "儲存設定失敗。",
         "error_search_page": "搜尋頁面必須指向現有頁面。",
-        "error_timezone": "時區必須是有效的 PHP 時區識別碼（如 UTC、Asia/Taipei）。",
+        "error_timezone": "時區必須是有效的 IANA 時區識別碼（如 UTC、Asia/Taipei）。",
         "error_title": "網站標題為必填欄位。",
         "favicon": "網站圖示",
         "footer_inject_page_label": "頁面頁腳 HTML",
@@ -347,7 +347,7 @@
         "tagline": "網站標語（選填）",
         "timezone": "時區",
         "tip_apple_touch_icon": "Must be square and PNG format, recommended 360x360px",
-        "tip_date_format_link": "PHP 日期格式文件",
+        "tip_date_format_link": "Go 日期格式文件",
         "tip_favicon": "建議使用 512px 正方形",
         "tip_language_link": "語言代碼",
         "tip_og_image": "建議橫幅 1360x712px，正方形 1200x1200px",
@@ -357,7 +357,7 @@
         "tip_optional": "選填",
         "tip_rss_ttl": "秒數，0 為停用",
         "tip_sidebar_logo": "124x34px works best",
-        "tip_timezone_link": "PHP 時區清單"
+        "tip_timezone_link": "IANA 時區清單"
       },
       "theme": {
         "active": "Active",

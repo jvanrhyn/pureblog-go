@@ -916,10 +916,10 @@ func (s *Server) handleContent(c *ctx) {
 	}
 	d.PostDateFormat = strings.TrimSpace(cfg.DateFormat)
 	if d.PostDateFormat == "" {
-		d.PostDateFormat = "F j, Y"
+		d.PostDateFormat = config.DefaultDateFormat
 	}
-	if !strings.ContainsAny(d.PostDateFormat, "HhGgi") {
-		d.PostDateFormat += " @ H:i"
+	if !blog.LayoutHasTime(d.PostDateFormat) {
+		d.PostDateFormat += " @ 15:04"
 	}
 
 	pages := s.site.Pages(true)

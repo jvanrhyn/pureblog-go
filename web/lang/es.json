@@ -311,7 +311,7 @@
         "error_purecomments_url_invalid": "Pure Comments URL must be a valid URL.",
         "error_save": "Error al guardar los ajustes.",
         "error_search_page": "La página de búsqueda debe referenciar una página existente.",
-        "error_timezone": "La zona horaria debe ser un identificador PHP válido (p. ej. UTC, Europe/Madrid).",
+        "error_timezone": "La zona horaria debe ser un identificador IANA válido (p. ej. UTC, Europe/Madrid).",
         "error_title": "El título del sitio es obligatorio.",
         "favicon": "Favicon",
         "footer_inject_page_label": "HTML de pie de página",
@@ -348,7 +348,7 @@
         "tagline": "Lema del sitio (opcional)",
         "timezone": "Zona horaria",
         "tip_apple_touch_icon": "Must be square and PNG format, recommended 360x360px",
-        "tip_date_format_link": "documentación del formato de fecha PHP",
+        "tip_date_format_link": "documentación del formato de fecha Go",
         "tip_favicon": "512px funciona mejor para cuadrado",
         "tip_language_link": "código de idioma",
         "tip_og_image": "recomendado 1360x712px para banner, o 1200x1200px para cuadrado",
@@ -358,7 +358,7 @@
         "tip_optional": "opcional",
         "tip_rss_ttl": "segundos, 0 para desactivar",
         "tip_sidebar_logo": "124x34px works best",
-        "tip_timezone_link": "lista de zonas horarias PHP"
+        "tip_timezone_link": "lista de zonas horarias IANA"
       },
       "theme": {
         "active": "Active",

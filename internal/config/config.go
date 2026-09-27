@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -106,7 +107,7 @@ func Default() Config {
 		AdminHomepage:       "dashboard",
 		Language:            "en",
 		Timezone:            localTimezone(),
-		DateFormat:          "F j, Y",
+		DateFormat:          DefaultDateFormat,
 		MFABackupCodes:      []string{},
 		Cache:               Cache{Enabled: true, RSSTTL: 3600},
 		Theme: Theme{
@@ -168,26 +169,36 @@ func Open(dir string) (*Store, error) {
 		}
 		return s, nil
 	}
-	if err := s.reload(); err != nil {
+	note, err := s.reload()
+	if err != nil {
 		return nil, err
+	}
+	if note != "" {
+		log.Printf("config: %s", note)
+		if err := s.Save(s.Get()); err != nil {
+			return nil, err
+		}
 	}
 	return s, nil
 }
 
-func (s *Store) reload() error {
+// reload reads config.json, converting a PHP date format if one is found.
+// It returns a note describing any conversion, which the caller persists.
+func (s *Store) reload() (string, error) {
 	raw, err := os.ReadFile(s.path)
 	if err != nil {
-		return err
+		return "", err
 	}
 	cfg, err := decode(raw)
 	if err != nil {
-		return fmt.Errorf("reading %s: %w", s.path, err)
+		return "", fmt.Errorf("reading %s: %w", s.path, err)
 	}
+	note := migrateDateFormat(&cfg)
 	s.mu.Lock()
 	s.cfg = cfg
 	s.installed = cfg.AdminPasswordHash != ""
 	s.mu.Unlock()
-	return nil
+	return note, nil
 }
 
 // decode unmarshals JSON over the defaults so missing keys keep their
@@ -267,7 +278,14 @@ func ImportPHP(path string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	return decode(data)
+	cfg, err := decode(data)
+	if err != nil {
+		return cfg, err
+	}
+	if note := migrateDateFormat(&cfg); note != "" {
+		log.Printf("config: %s", note)
+	}
+	return cfg, nil
 }
 
 // normalizeLists turns empty PHP arrays that should be objects back into

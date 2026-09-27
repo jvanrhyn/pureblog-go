@@ -316,7 +316,7 @@
         "error_purecomments_url_invalid": "Pure Comments URL must be a valid URL.",
         "error_save": "Failed to save settings.",
         "error_search_page": "Search page must reference an existing page.",
-        "error_timezone": "Timezone must be a valid PHP timezone identifier (e.g. UTC, Europe/London).",
+        "error_timezone": "Timezone must be a valid IANA timezone identifier (e.g. UTC, Europe/London).",
         "error_title": "Site title is required.",
         "favicon": "Favicon",
         "footer_inject_page_label": "Page footer HTML",
@@ -353,7 +353,7 @@
         "tagline": "Site tagline (optional)",
         "timezone": "Timezone",
         "tip_apple_touch_icon": "Must be square and PNG format, recommended 360x360px",
-        "tip_date_format_link": "PHP date format docs",
+        "tip_date_format_link": "Go date format docs",
         "tip_favicon": "512px square works best",
         "tip_language_link": "language code",
         "tip_og_image": "recommended 1360x712px for banner, or 1200x1200px for square",
@@ -363,7 +363,7 @@
         "tip_optional": "optional",
         "tip_rss_ttl": "seconds, 0 to disable",
         "tip_sidebar_logo": "124x34px works best",
-        "tip_timezone_link": "PHP timezone list"
+        "tip_timezone_link": "IANA timezone list"
       },
       "theme": {
         "active": "Active",

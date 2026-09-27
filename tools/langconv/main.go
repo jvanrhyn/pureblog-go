@@ -1,11 +1,12 @@
 // Command langconv converts Pure Blog's lang/*.php files into the JSON
 // files embedded by the Go port (web/lang/*.json), renaming the product to
-// PureBlog-Go in the translated strings.
+// PureBlog-Go and pointing PHP-specific help text at Go equivalents.
 //
 //	go run ./tools/langconv -src ../pureblog/lang -dst web/lang
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"log"
@@ -20,6 +21,19 @@ import (
 // productName matches the upstream name as it appears in translations,
 // including hyphenated compounds such as "Pure-Blog-Verwaltung".
 var productName = regexp.MustCompile(`Pure[ -]Blog`)
+
+// phpHelp matches the translated lines that refer to PHP: the date format
+// docs link (now Go time layouts) and the time zone link and error (IANA
+// names).
+var phpHelp = regexp.MustCompile(`(?m)^\s*"(?:tip_date_format_link|error_timezone|tip_timezone_link)": .*$`)
+
+func goTerms(line []byte) []byte {
+	if bytes.Contains(line, []byte(`timezone`)) {
+		line = bytes.ReplaceAll(line, []byte(" w PHP"), []byte(" IANA")) // pl: "... strefy czasowej w PHP"
+		return bytes.ReplaceAll(line, []byte("PHP"), []byte("IANA"))
+	}
+	return bytes.ReplaceAll(line, []byte("PHP"), []byte("Go"))
+}
 
 func main() {
 	src := flag.String("src", "../pureblog/lang", "directory containing lang/*.php")
@@ -47,6 +61,7 @@ func main() {
 			log.Fatal(err)
 		}
 		out = productName.ReplaceAll(out, []byte("PureBlog-Go"))
+		out = phpHelp.ReplaceAllFunc(out, goTerms)
 		name := strings.TrimSuffix(filepath.Base(f), ".php") + ".json"
 		if err := os.WriteFile(filepath.Join(*dst, name), append(out, '\n'), 0o644); err != nil {
 			log.Fatal(err)

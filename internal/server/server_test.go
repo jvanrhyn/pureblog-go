@@ -293,6 +293,13 @@ func TestEndToEnd(t *testing.T) {
 		"date_format": {"j F Y"}, "language": {"en"}, "search_page_slug": {"search"}, "og_image_preferred": {"banner"},
 		"cache_enabled": {"on"}, "search_include_pages": {"on"}, "base_url": {c.base}}
 	resp, body = c.post("/admin/settings-site", form)
+	expectContains(t, body, "must be a Go time layout", "PHP date format rejected")
+	if site.Config.Get().SiteTitle == "Renamed Blog" {
+		t.Fatal("settings saved despite a PHP date format")
+	}
+	form.Set("csrf_token", c.csrf("/admin/settings-site"))
+	form.Set("date_format", "2 January 2006")
+	resp, body = c.post("/admin/settings-site", form)
 	expectStatus(t, resp, http.StatusOK, "save site settings")
 	expectContains(t, body, "Settings updated", "site settings notice")
 	if cfg := site.Config.Get(); cfg.SiteTitle != "Renamed Blog" || cfg.PostsPerPage != 5 {

@@ -726,7 +726,7 @@ func (s *Server) handleFeed(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(&b, "                <title>%s</title>\n", esc(p.Title))
 		fmt.Fprintf(&b, "                <link>%s</link>\n", esc(postURL))
 		fmt.Fprintf(&b, "                <guid>%s</guid>\n", esc(postURL))
-		fmt.Fprintf(&b, "                <pubDate>%s</pubDate>\n", esc(blog.PHPDate("D, d M Y H:i:s O", pub)))
+		fmt.Fprintf(&b, "                <pubDate>%s</pubDate>\n", esc(pub.Format(time.RFC1123Z)))
 		fmt.Fprintf(&b, "                <description><![CDATA[%s]]></description>\n", content)
 		b.WriteString("            </item>\n")
 	}

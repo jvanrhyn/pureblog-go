@@ -129,21 +129,21 @@ func (s *Site) NowForStorage() string {
 	return time.Now().In(s.Loc()).Format(StorageLayout)
 }
 
-// FormatDate formats a stored date with a PHP date format (or the site's
-// date format when format is empty), translating month and day names.
-func (s *Site) FormatDate(value, format string) string {
+// FormatDate formats a stored date with a Go time layout (or the site's
+// date format when layout is empty), translating month and day names.
+func (s *Site) FormatDate(value, layout string) string {
 	cfg := s.Config.Get()
 	t, ok := ParsePostTime(value, Location(cfg))
 	if !ok {
 		return ""
 	}
-	if strings.TrimSpace(format) == "" {
-		format = strings.TrimSpace(cfg.DateFormat)
-		if format == "" {
-			format = "F j, Y"
+	if strings.TrimSpace(layout) == "" {
+		layout = strings.TrimSpace(cfg.DateFormat)
+		if layout == "" {
+			layout = config.DefaultDateFormat
 		}
 	}
-	return s.I18n.Translator(cfg.Language).TranslateDate(PHPDate(format, t))
+	return s.I18n.Translator(cfg.Language).TranslateDate(t.Format(layout))
 }
 
 // ReadingTime returns the localised "N min read" label.
@@ -285,9 +285,9 @@ func (s *Site) SavePost(in PostInput, originalSlug string) (string, error) {
 	if date == "" {
 		date = s.NowForStorage()
 	}
-	prefix := s.FormatDate(date, "Y-m-d")
+	prefix := s.FormatDate(date, time.DateOnly)
 	if prefix == "" {
-		prefix = s.FormatDate(s.NowForStorage(), "Y-m-d")
+		prefix = s.FormatDate(s.NowForStorage(), time.DateOnly)
 	}
 	path := filepath.Join(s.PostsDir, prefix+"-"+slug+".md")
 

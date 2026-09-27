@@ -49,8 +49,8 @@
                 <label for="timezone">{{t "admin.settings.site.timezone"}} <span class="tip">(<a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank" rel="noopener noreferrer">{{t "admin.settings.site.tip_timezone_link"}}</a>)</span></label>
                 <input type="text" id="timezone" name="timezone" value="{{$c.Timezone}}" placeholder="UTC" required>
 
-                <label for="date_format">{{t "admin.settings.site.date_format"}} <span class="tip">(<a href="https://www.php.net/manual/en/datetime.format.php" target="_blank" rel="noopener noreferrer">{{t "admin.settings.site.tip_date_format_link"}}</a>)</span></label>
-                <input type="text" id="date_format" name="date_format" value="{{$c.DateFormat}}" placeholder="F j, Y" required>
+                <label for="date_format">{{t "admin.settings.site.date_format"}} <span class="tip">(<a href="https://pkg.go.dev/time#pkg-constants" target="_blank" rel="noopener noreferrer">{{t "admin.settings.site.tip_date_format_link"}}</a>)</span></label>
+                <input type="text" id="date_format" name="date_format" value="{{$c.DateFormat}}" placeholder="January 2, 2006" required>
 
                 <label class="inline-checkbox" for="show_reading_time">
                     <input type="checkbox" id="show_reading_time" name="show_reading_time"{{if $c.ShowReadingTime}} checked{{end}}>

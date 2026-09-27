@@ -311,7 +311,7 @@
         "error_purecomments_url_invalid": "Pure Comments URL must be a valid URL.",
         "error_save": "Speichern der Einstellungen fehlgeschlagen.",
         "error_search_page": "Die Suchseite muss auf eine vorhandene Seite verweisen.",
-        "error_timezone": "Zeitzone muss ein gültiger PHP-Zeitzonenbezeichner sein (z. B. UTC, Europe/Berlin).",
+        "error_timezone": "Zeitzone muss ein gültiger IANA-Zeitzonenbezeichner sein (z. B. UTC, Europe/Berlin).",
         "error_title": "Blog-Titel ist erforderlich.",
         "favicon": "Favicon",
         "footer_inject_page_label": "Seiten-Footer-HTML",
@@ -348,7 +348,7 @@
         "tagline": "Blog-Slogan (optional)",
         "timezone": "Zeitzone",
         "tip_apple_touch_icon": "Must be square and PNG format, recommended 360x360px",
-        "tip_date_format_link": "PHP-Datumsformat-Dokumentation",
+        "tip_date_format_link": "Go-Datumsformat-Dokumentation",
         "tip_favicon": "512 Pixel quadratisch funktioniert am besten",
         "tip_language_link": "Sprachcode",
         "tip_og_image": "Empfohlen: 1.360 × 712 px für Banner oder 1.200 × 1.200 px für quadratisch",
@@ -358,7 +358,7 @@
         "tip_optional": "optional",
         "tip_rss_ttl": "Sekunden, 0 zum Deaktivieren",
         "tip_sidebar_logo": "124x34px works best",
-        "tip_timezone_link": "PHP-Zeitzonenliste"
+        "tip_timezone_link": "IANA-Zeitzonenliste"
       },
       "theme": {
         "active": "Active",

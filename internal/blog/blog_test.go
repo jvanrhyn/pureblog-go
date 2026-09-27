@@ -6,20 +6,16 @@ import (
 	"time"
 )
 
-func TestPHPDate(t *testing.T) {
-	tm := time.Date(2026, 3, 1, 14, 5, 9, 0, time.UTC)
-	cases := map[string]string{
-		"F j, Y":      "March 1, 2026",
-		"Y-m-d":       "2026-03-01",
-		"D, d M Y":    "Sun, 01 Mar 2026",
-		"jS \\o\\f F": "1st of March",
-		"g:i a":       "2:05 pm",
-		"c":           "2026-03-01T14:05:09+00:00",
-		"N l":         "7 Sunday",
-	}
-	for f, want := range cases {
-		if got := PHPDate(f, tm); got != want {
-			t.Errorf("PHPDate(%q) = %q, want %q", f, got, want)
+func TestLayoutHasTime(t *testing.T) {
+	for layout, want := range map[string]bool{
+		"January 2, 2006":      false,
+		"2006-01-02":           false,
+		"2 Jan 2006 15:04":     true,
+		"Mon, 2 Jan 2006 3 PM": true,
+		time.RFC3339:           true,
+	} {
+		if got := LayoutHasTime(layout); got != want {
+			t.Errorf("LayoutHasTime(%q) = %v, want %v", layout, got, want)
 		}
 	}
 }

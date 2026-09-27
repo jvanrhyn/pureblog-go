@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/johanvanrhyn/pureblog-go/internal/blog"
 	"github.com/johanvanrhyn/pureblog-go/internal/i18n"
@@ -66,8 +67,8 @@ func (s *Server) baseFuncs(tr func() *i18n.Translator) template.FuncMap {
 		"upper":      strings.ToUpper,
 		"trimPrefix": strings.TrimPrefix,
 		"date":       func(value string) string { return s.site.FormatDate(value, "") },
-		"dateFmt":    func(value, format string) string { return s.site.FormatDate(value, format) },
-		"isoDate":    func(value string) string { return s.site.FormatDate(value, "c") },
+		"dateFmt":    func(value, layout string) string { return s.site.FormatDate(value, layout) },
+		"isoDate":    func(value string) string { return s.site.FormatDate(value, time.RFC3339) },
 		"tagSlug":    blog.NormalizeTag,
 		"number":     numberFormat,
 		"number1":    func(f float64) string { return numberFormat1(f) },

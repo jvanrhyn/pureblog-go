@@ -311,7 +311,7 @@
         "error_purecomments_url_invalid": "Adresa URL Pure Comments trebuie să fie o adresă URL validă.",
         "error_save": "Salvarea setărilor a eșuat.",
         "error_search_page": "Pagina de căutare trebuie să facă referire la o pagină existentă.",
-        "error_timezone": "Fusul orar trebuie să fie un identificator PHP valid (ex. UTC, Europe/Bucharest).",
+        "error_timezone": "Fusul orar trebuie să fie un identificator IANA valid (ex. UTC, Europe/Bucharest).",
         "error_title": "Titlul site-ului este obligatoriu.",
         "favicon": "Favicon",
         "footer_inject_page_label": "HTML subsol pagină",
@@ -348,7 +348,7 @@
         "tagline": "Slogan site (opțional)",
         "timezone": "Fus orar",
         "tip_apple_touch_icon": "Must be square and PNG format, recommended 360x360px",
-        "tip_date_format_link": "documentație format dată PHP",
+        "tip_date_format_link": "documentație format dată Go",
         "tip_favicon": "Cel mai bine funcționează 512px pătrat",
         "tip_language_link": "cod limbă",
         "tip_og_image": "recomandat 1360x712px pentru banner sau 1200x1200px pentru pătrat",
@@ -358,7 +358,7 @@
         "tip_optional": "opțional",
         "tip_rss_ttl": "secunde, 0 pentru dezactivare",
         "tip_sidebar_logo": "124x34px works best",
-        "tip_timezone_link": "lista fusurilor orare PHP"
+        "tip_timezone_link": "lista fusurilor orare IANA"
       },
       "theme": {
         "active": "Active",

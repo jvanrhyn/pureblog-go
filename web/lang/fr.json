@@ -310,7 +310,7 @@
         "error_purecomments_url_invalid": "L'URL de Pure Comments doit être une URL valide.",
         "error_save": "Échec de l'enregistrement des paramètres.",
         "error_search_page": "La page de recherche doit référencer une page existante.",
-        "error_timezone": "Le fuseau horaire doit être un identifiant PHP valide (ex. UTC, Europe/Paris).",
+        "error_timezone": "Le fuseau horaire doit être un identifiant IANA valide (ex. UTC, Europe/Paris).",
         "error_title": "Le titre du site est obligatoire.",
         "favicon": "Favicon",
         "footer_inject_page_label": "HTML du pied de page",
@@ -347,7 +347,7 @@
         "tagline": "Sous-titre du site (facultatif)",
         "timezone": "Fuseau horaire",
         "tip_apple_touch_icon": "Must be square and PNG format, recommended 360x360px",
-        "tip_date_format_link": "documentation du format de date PHP",
+        "tip_date_format_link": "documentation du format de date Go",
         "tip_favicon": "512px carré de préférence",
         "tip_language_link": "code de langue",
         "tip_og_image": "recommandé 1360x712px pour bannière, ou 1200x1200px pour carré",
@@ -357,7 +357,7 @@
         "tip_optional": "optionnel",
         "tip_rss_ttl": "secondes, 0 pour désactiver",
         "tip_sidebar_logo": "124x34px works best",
-        "tip_timezone_link": "liste des fuseaux horaires PHP"
+        "tip_timezone_link": "liste des fuseaux horaires IANA"
       },
       "theme": {
         "active": "Active",

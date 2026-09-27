@@ -119,6 +119,8 @@ func (s *Server) handleSettingsSite(c *ctx) {
 		}
 		if dateFormat == "" {
 			errs = append(errs, t.T("admin.settings.site.error_date_format"))
+		} else if !config.IsLayout(dateFormat) {
+			errs = append(errs, "Date format must be a Go time layout, such as \"January 2, 2006\" or \"2 Jan 2006 15:04\".")
 		}
 		if homeSlug != "" && !slugs[homeSlug] {
 			errs = append(errs, t.T("admin.settings.site.error_homepage"))
@@ -662,7 +664,7 @@ func (s *Server) handleSettingsUpdates(c *ctx) {
 			d.UpdateAvailable = d.Release.Tag != "" && !versionsMatch(d.Current, d.Release.Tag)
 			d.LatestDisplay = strings.TrimLeft(d.Release.Tag, "vV")
 			if d.Release.PublishedAt != "" {
-				d.Published = s.site.FormatDate(d.Release.PublishedAt, "Y-m-d")
+				d.Published = s.site.FormatDate(d.Release.PublishedAt, time.DateOnly)
 			}
 			_ = os.WriteFile(filepath.Join(s.site.ContentDir, ".version-cache"), []byte(d.Release.Tag), 0o644)
 		}
